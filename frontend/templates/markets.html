@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Indian Markets - StockSense AI{% endblock %}
+
+{% block content %}
+<div class="page-title-group d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div>
+    <h1 class="page-main-heading">Indian Equities & Indices</h1>
+    <p class="page-sub-heading">Real-time surveillance across National Stock Exchange (NSE) and Bombay Stock Exchange (BSE)</p>
+  </div>
+</div>
+
+<!-- Major Benchmark Indices -->
+<div class="mb-4">
+  <div class="panel-title mb-3">
+    <span>🌐</span> Major Benchmark Indices
+  </div>
+  <div class="market-overview-grid" id="market-indices-grid">
+    <div class="market-index-card skeleton-box" style="height: 105px;"></div>
+    <div class="market-index-card skeleton-box" style="height: 105px;"></div>
+    <div class="market-index-card skeleton-box" style="height: 105px;"></div>
+    <div class="market-index-card skeleton-box" style="height: 105px;"></div>
+  </div>
+</div>
+
+<!-- High Volume NIFTY 50 Bluechips Section -->
+<div class="fintech-panel mb-4">
+  <div class="panel-header">
+    <h2 class="panel-title">
+      <span>🏛️</span> High-Volume NIFTY 50 Constituents
+    </h2>
+    <span class="stock-card-badge">Large Cap</span>
+  </div>
+
+  <div class="table-responsive-box">
+    <table class="fintech-data-table">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Company</th>
+          <th>Exchange</th>
+          <th>Sector</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fw-bold num-mono" style="color: #111827;">RELIANCE</td>
+          <td>Reliance Industries Ltd</td>
+          <td><span class="stock-card-badge">NSE</span></td>
+          <td>Energy & Retail</td>
+          <td><a href="/analysis/RELIANCE" class="btn-fintech btn-fintech-ghost" style="padding:2px 8px; font-size:0.75rem;">Analyze →</a></td>
+        </tr>
+        <tr>
+          <td class="fw-bold num-mono" style="color: #111827;">TCS</td>
+          <td>Tata Consultancy Services Ltd</td>
+          <td><span class="stock-card-badge">NSE</span></td>
+          <td>Information Technology</td>
+          <td><a href="/analysis/TCS" class="btn-fintech btn-fintech-ghost" style="padding:2px 8px; font-size:0.75rem;">Analyze →</a></td>
+        </tr>
+        <tr>
+          <td class="fw-bold num-mono" style="color: #111827;">HDFCBANK</td>
+          <td>HDFC Bank Ltd</td>
+          <td><span class="stock-card-badge">NSE</span></td>
+          <td>Banking & Finance</td>
+          <td><a href="/analysis/HDFCBANK" class="btn-fintech btn-fintech-ghost" style="padding:2px 8px; font-size:0.75rem;">Analyze →</a></td>
+        </tr>
+        <tr>
+          <td class="fw-bold num-mono" style="color: #111827;">INFY</td>
+          <td>Infosys Ltd</td>
+          <td><span class="stock-card-badge">NSE</span></td>
+          <td>Information Technology</td>
+          <td><a href="/analysis/INFY" class="btn-fintech btn-fintech-ghost" style="padding:2px 8px; font-size:0.75rem;">Analyze →</a></td>
+        </tr>
+        <tr>
+          <td class="fw-bold num-mono" style="color: #111827;">TATAMOTORS</td>
+          <td>Tata Motors Ltd</td>
+          <td><span class="stock-card-badge">NSE</span></td>
+          <td>Automobile</td>
+          <td><a href="/analysis/TATAMOTORS" class="btn-fintech btn-fintech-ghost" style="padding:2px 8px; font-size:0.75rem;">Analyze →</a></td>
+        </tr>
+        <tr>
+          <td class="fw-bold num-mono" style="color: #111827;">ICICIBANK</td>
+          <td>ICICI Bank Ltd</td>
+          <td><span class="stock-card-badge">NSE</span></td>
+          <td>Banking & Finance</td>
+          <td><a href="/analysis/ICICIBANK" class="btn-fintech btn-fintech-ghost" style="padding:2px 8px; font-size:0.75rem;">Analyze →</a></td>
+        </tr>
+        <tr>
+          <td class="fw-bold num-mono" style="color: #111827;">SBIN</td>
+          <td>State Bank of India</td>
+          <td><span class="stock-card-badge">NSE</span></td>
+          <td>Public Banking</td>
+          <td><a href="/analysis/SBIN" class="btn-fintech btn-fintech-ghost" style="padding:2px 8px; font-size:0.75rem;">Analyze →</a></td>
+        </tr>
+        <tr>
+          <td class="fw-bold num-mono" style="color: #111827;">BHARTIARTL</td>
+          <td>Bharti Airtel Ltd</td>
+          <td><span class="stock-card-badge">NSE</span></td>
+          <td>Telecommunications</td>
+          <td><a href="/analysis/BHARTIARTL" class="btn-fintech btn-fintech-ghost" style="padding:2px 8px; font-size:0.75rem;">Analyze →</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

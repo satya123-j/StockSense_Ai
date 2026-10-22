@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal - StockSense AI</title>
+  
+  <!-- Inter & JetBrains Mono Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Custom Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+
+  <style>
+    :root {
+      --admin-navy: #0f172a;
+      --admin-navy-light: #1e293b;
+      --admin-accent: #dc2626;
+      --admin-accent-subtle: rgba(220, 38, 38, 0.08);
+      --admin-green: #16a34a;
+      --admin-green-subtle: rgba(22, 163, 74, 0.08);
+    }
+
+    body {
+      background-color: #f8fafc;
+      color: #1e293b;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+
+    .admin-navbar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-default, #e2e8f0);
+      padding: 0.85rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1020;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid var(--border-default, #e2e8f0);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .kpi-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .nav-tabs-admin {
+      border-bottom: 2px solid var(--border-default, #e2e8f0);
+      gap: 0.5rem;
+    }
+    .nav-tabs-admin .nav-link {
+      color: #64748b;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 0.75rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 0;
+      margin-bottom: -2px;
+      transition: all 0.2s ease;
+    }
+    .nav-tabs-admin .nav-link:hover {
+      color: #0f172a;
+      border-bottom-color: #cbd5e1;
+    }
+    .nav-tabs-admin .nav-link.active {
+      color: #dc2626;
+      border-bottom: 2px solid #dc2626;
+      background: transparent;
+    }
+
+    .badge-role-admin {
+      background-color: rgba(220, 38, 38, 0.12);
+      color: #dc2626;
+      font-weight: 600;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+    }
+    .badge-role-user {
+      background-color: rgba(100, 116, 139, 0.12);
+      color: #475569;
+      font-weight: 600;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+    }
+
+    .action-buy {
+      color: #16a34a;
+      background-color: rgba(22, 163, 74, 0.1);
+      font-weight: 700;
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+    }
+    .action-sell {
+      color: #dc2626;
+      background-color: rgba(220, 38, 38, 0.1);
+      font-weight: 700;
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+    }
+
+    .table-container {
+      background: #ffffff;
+      border: 1px solid var(--border-default, #e2e8f0);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .table-custom thead th {
+      background-color: #f8fafc;
+      color: #64748b;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border-default, #e2e8f0);
+      white-space: nowrap;
+    }
+    .table-custom tbody td {
+      padding: 0.9rem 1rem;
+      font-size: 0.875rem;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .table-custom tbody tr:hover {
+      background-color: #fbfcfe;
+    }
+
+    .user-avatar-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e293b, #334155);
+      color: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .balance-preview-box {
+      background-color: #f1f5f9;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .preset-chip {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .preset-chip:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+      color: #dc2626;
+    }
+
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1080;
+    }
+
+    .detail-metric-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Admin Navbar -->
+  <nav class="admin-navbar">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <div class="brand-icon-box" style="background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem;">
+          SS
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold" style="font-size: 1.15rem; color: #0f172a;">StockSense <span style="color: #dc2626;">AI</span></span>
+            <span class="badge bg-danger text-white px-2 py-1" style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px;">ADMIN PORTAL</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <!-- Live Status Indicator -->
+        <div class="d-none d-md-flex align-items-center gap-2 px-3 py-1 rounded-pill" style="background: rgba(22, 163, 74, 0.08); border: 1px solid rgba(22, 163, 74, 0.2); font-size: 0.75rem; color: #15803d; font-weight: 600;">
+          <span style="display: inline-block; width: 8px; height: 8px; background: #16a34a; border-radius: 50%;"></span>
+          <span>ADMIN RBAC VERIFIED</span>
+        </div>
+
+        <!-- Admin Profile Pill -->
+        <div class="d-flex align-items-center gap-2">
+          <div class="user-avatar-circle" style="background: #0f172a;">
+            {{ current_user.username[:2]|upper if current_user.username else 'AD' }}
+          </div>
+          <div class="d-none d-sm-block text-end">
+            <div class="fw-bold text-dark" style="font-size: 0.85rem;">{{ current_user.username }}</div>
+            <div class="text-secondary" style="font-size: 0.7rem;">System Administrator</div>
+          </div>
+        </div>
+
+        <!-- Logout Action -->
+        <button onclick="handleLogout()" class="btn btn-outline-danger btn-sm px-3" style="font-size: 0.8rem; font-weight: 600; border-radius: 6px;">
+          Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container-fluid px-4 py-4" style="max-width: 1400px;">
+
+    <!-- Page Header & Quick Notice -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      <div>
+        <h3 class="fw-bold text-dark mb-1">Administrative Control Center</h3>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge bg-success-subtle text-success px-2 py-1" style="font-size: 0.72rem; font-weight: 600;">
+            ● ACTIVE ADMIN SESSION
+          </span>
+          <span class="text-secondary" style="font-size: 0.72rem;">Administrator Area Verified • RBAC Protocol v1.0</span>
+        </div>
+        <p class="text-secondary mb-0" style="font-size: 0.875rem;">
+          Oversee platform users, inspect paper-trading portfolios, review execution surveillance, and manage virtual cash liquidity.
+        </p>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button id="btn-refresh-all" class="btn btn-white border shadow-sm btn-sm px-3 py-2 fw-semibold text-secondary" onclick="loadDashboardData()" style="font-size: 0.825rem;">
+          <span id="refresh-spinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+          ↻ Refresh Data
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Metric Cards Row -->
+    <div class="row g-3 mb-4">
+      <!-- Total Users -->
+      <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card h-100">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="text-secondary fw-semibold" style="font-size: 0.8rem; text-transform: uppercase;">Total Registered</span>
+            <div class="kpi-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">👥</div>
+          </div>
+          <div class="fs-3 fw-bold text-dark num-mono" id="kpi-total-users">-</div>
+          <div class="text-secondary" style="font-size: 0.75rem;" id="kpi-user-roles-breakdown">Loading accounts...</div>
+        </div>
+      </div>
+
+      <!-- System Virtual Liquidity -->
+      <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card h-100">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="text-secondary fw-semibold" style="font-size: 0.8rem; text-transform: uppercase;">Total Virtual Cash</span>
+            <div class="kpi-icon" style="background: rgba(22, 163, 74, 0.1); color: #16a34a;">💰</div>
+          </div>
+          <div class="fs-3 fw-bold text-success num-mono" id="kpi-total-cash">-</div>
+          <div class="text-secondary" style="font-size: 0.75rem;">Simulated capital in circulation</div>
+        </div>
+      </div>
+
+      <!-- Total Portfolio Assets -->
+      <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card h-100">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="text-secondary fw-semibold" style="font-size: 0.8rem; text-transform: uppercase;">Holdings Market Value</span>
+            <div class="kpi-icon" style="background: rgba(147, 51, 234, 0.1); color: #9333ea;">📈</div>
+          </div>
+          <div class="fs-3 fw-bold text-dark num-mono" id="kpi-total-holdings-val">-</div>
+          <div class="text-secondary" style="font-size: 0.75rem;" id="kpi-active-positions-count">Active holdings across all users</div>
+        </div>
+      </div>
+
+      <!-- Paper Trading Executions -->
+      <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card h-100">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="text-secondary fw-semibold" style="font-size: 0.8rem; text-transform: uppercase;">Trade Executions</span>
+            <div class="kpi-icon" style="background: rgba(234, 88, 12, 0.1); color: #ea580c;">⚡</div>
+          </div>
+          <div class="fs-3 fw-bold text-dark num-mono" id="kpi-total-trades">-</div>
+          <div class="text-secondary" style="font-size: 0.75rem;">Platform paper trades executed</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs-admin mb-3" id="adminTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-users-btn" data-bs-toggle="tab" data-bs-target="#tab-users" type="button" role="tab">
+          👤 User Management (<span id="tab-users-count">0</span>)
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-activity-btn" data-bs-toggle="tab" data-bs-target="#tab-activity" type="button" role="tab">
+          📊 Trading Activity Stream
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-audit-btn" data-bs-toggle="tab" data-bs-target="#tab-audit" type="button" role="tab">
+          🛡️ Admin Audit Logs
+        </button>
+      </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="adminTabsContent">
+      
+      <!-- ========================================== -->
+      <!-- TAB 1: USER MANAGEMENT -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade show active" id="tab-users" role="tabpanel">
+        
+        <!-- Search & Filter Controls -->
+        <div class="fintech-panel p-3 mb-3 bg-white border rounded-3">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light border-end-0 text-muted">🔍</span>
+                <input type="text" id="user-search-input" class="form-control border-start-0" placeholder="Search by name, username, email, or user ID..." oninput="filterUsersTable()">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <select id="user-role-filter" class="form-select form-select-sm" onchange="filterUsersTable()">
+                <option value="ALL">All Roles</option>
+                <option value="user">Standard Users Only</option>
+                <option value="admin">Administrators Only</option>
+              </select>
+            </div>
+            <div class="col-md-4 text-md-end text-muted" style="font-size: 0.8rem;">
+              Showing <span id="filtered-users-count" class="fw-bold text-dark">0</span> users
+            </div>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="table-container mb-4">
+          <div class="table-responsive">
+            <table class="table table-custom mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">User ID</th>
+                  <th>Name / Username</th>
+                  <th>Email</th>
+                  <th>Registered</th>
+                  <th>Role</th>
+                  <th class="text-end">Virtual Cash</th>
+                  <th class="text-end">Portfolio Value</th>
+                  <th class="text-end">Total P/L</th>
+                  <th class="text-center" style="width: 190px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <tr>
+                  <td colspan="9" class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm text-danger me-2" role="status"></div>
+                    Loading registered platform users...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 2: TRADING ACTIVITY STREAM -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-activity" role="tabpanel">
+        
+        <!-- Activity Filters -->
+        <div class="fintech-panel p-3 mb-3 bg-white border rounded-3">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light border-end-0 text-muted">🔍</span>
+                <input type="text" id="activity-search-input" class="form-control border-start-0" placeholder="Filter by stock symbol, company, or username..." oninput="filterActivityTable()">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <select id="activity-action-filter" class="form-select form-select-sm" onchange="filterActivityTable()">
+                <option value="ALL">All Actions (BUY & SELL)</option>
+                <option value="BUY">BUY Orders Only</option>
+                <option value="SELL">SELL Orders Only</option>
+              </select>
+            </div>
+            <div class="col-md-4 text-md-end text-muted" style="font-size: 0.8rem;">
+              <span id="filtered-activity-count" class="fw-bold text-dark">0</span> paper trades recorded
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Table -->
+        <div class="table-container mb-4">
+          <div class="table-responsive">
+            <table class="table table-custom mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>User</th>
+                  <th>Action</th>
+                  <th>Stock</th>
+                  <th class="text-end">Quantity</th>
+                  <th class="text-end">Execution Price</th>
+                  <th class="text-end">Total Amount</th>
+                  <th class="text-end">Realized P/L</th>
+                  <th class="text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody id="activity-table-body">
+                <tr>
+                  <td colspan="9" class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm text-danger me-2" role="status"></div>
+                    Loading platform paper-trading activity stream...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 3: ADMIN AUDIT LOGS -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-audit" role="tabpanel">
+        <div class="table-container mb-4">
+          <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="fw-bold mb-0 text-dark">Administrative Capital & Security Audit Log</h6>
+              <span class="text-muted" style="font-size: 0.75rem;">Immutable history of admin virtual money grants and actions</span>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" onclick="loadAuditLogs()">Refresh Audit Trail</button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-custom mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th style="width: 160px;">Date & Time</th>
+                  <th>Admin Actor</th>
+                  <th>Recipient User</th>
+                  <th>Action Type</th>
+                  <th class="text-end">Amount Added</th>
+                  <th>Details & Reason</th>
+                </tr>
+              </thead>
+              <tbody id="audit-table-body">
+                <tr>
+                  <td colspan="6" class="text-center py-5 text-muted">Loading audit entries...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 1: USER DETAILS & PORTFOLIO INSPECTION -->
+  <!-- ======================================================== -->
+  <div class="modal fade" id="modalUserDetails" tabindex="-1" aria-labelledby="modalUserDetailsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+        
+        <!-- Modal Header -->
+        <div class="modal-header border-bottom px-4 py-3" style="background: #f8fafc;">
+          <div class="d-flex align-items-center gap-3">
+            <div class="user-avatar-circle" id="detail-modal-avatar" style="width: 44px; height: 44px; font-size: 1rem;">
+              U
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h5 class="modal-title fw-bold text-dark mb-0" id="detail-modal-name">User Details</h5>
+                <span id="detail-modal-role-badge" class="badge-role-user">user</span>
+              </div>
+              <div class="text-muted" style="font-size: 0.8rem;">
+                <span id="detail-modal-email">user@example.com</span> • ID: #<span id="detail-modal-id">0</span> • Registered: <span id="detail-modal-regdate">N/A</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body p-4">
+          
+          <!-- Financial Valuation Summary Banner -->
+          <div class="row g-2 mb-4">
+            <div class="col-sm-6 col-md-3">
+              <div class="detail-metric-card h-100">
+                <div class="text-secondary mb-1" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 600;">Virtual Cash</div>
+                <div class="fs-5 fw-bold text-success num-mono mb-2" id="detail-virtual-cash">₹0.00</div>
+                <button class="btn btn-sm btn-outline-success py-0 px-2" style="font-size: 0.72rem; font-weight: 600;" id="detail-btn-add-cash">
+                  + Add Virtual Cash
+                </button>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-md-3">
+              <div class="detail-metric-card h-100">
+                <div class="text-secondary mb-1" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 600;">Invested Capital</div>
+                <div class="fs-5 fw-bold text-dark num-mono" id="detail-invested-amount">₹0.00</div>
+                <div class="text-muted" style="font-size: 0.72rem;" id="detail-holdings-count">0 positions</div>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-md-3">
+              <div class="detail-metric-card h-100">
+                <div class="text-secondary mb-1" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 600;">Portfolio Value</div>
+                <div class="fs-5 fw-bold text-primary num-mono" id="detail-portfolio-value">₹0.00</div>
+                <div class="text-muted" style="font-size: 0.72rem;">Current market value</div>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-md-3">
+              <div class="detail-metric-card h-100">
+                <div class="text-secondary mb-1" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 600;">Total P/L</div>
+                <div class="fs-5 fw-bold num-mono" id="detail-total-pnl">₹0.00</div>
+                <div id="detail-total-pnl-pct" style="font-size: 0.72rem; font-weight: 600;">0.00%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sub-tabs within Modal -->
+          <ul class="nav nav-pills mb-3" id="userModalPills" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active py-1 px-3" id="pill-holdings-tab" data-bs-toggle="pill" data-bs-target="#pill-holdings" type="button" role="tab" style="font-size: 0.85rem; font-weight: 600;">
+                📦 Portfolio Holdings (<span id="modal-holdings-badge">0</span>)
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link py-1 px-3" id="pill-txs-tab" data-bs-toggle="pill" data-bs-target="#pill-txs" type="button" role="tab" style="font-size: 0.85rem; font-weight: 600;">
+                📜 Transaction History (<span id="modal-txs-badge">0</span>)
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link py-1 px-3" id="pill-audits-tab" data-bs-toggle="pill" data-bs-target="#pill-audits" type="button" role="tab" style="font-size: 0.85rem; font-weight: 600;">
+                🛡️ Admin Grants (<span id="modal-audits-badge">0</span>)
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="userModalPillsContent">
+            
+            <!-- Portfolio Holdings Sub-tab -->
+            <div class="tab-pane fade show active" id="pill-holdings" role="tabpanel">
+              <div class="table-responsive border rounded-3">
+                <table class="table table-sm table-custom mb-0 align-middle">
+                  <thead>
+                    <tr>
+                      <th>Stock Symbol</th>
+                      <th>Company Name</th>
+                      <th class="text-end">Quantity</th>
+                      <th class="text-end">Avg Buy Price</th>
+                      <th class="text-end">Market Price</th>
+                      <th class="text-end">Invested</th>
+                      <th class="text-end">Current Value</th>
+                      <th class="text-end">Profit / Loss</th>
+                      <th class="text-end">P/L %</th>
+                    </tr>
+                  </thead>
+                  <tbody id="modal-holdings-body">
+                    <tr><td colspan="9" class="text-center py-4 text-muted">No holdings found for this user.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Transactions Sub-tab -->
+            <div class="tab-pane fade" id="pill-txs" role="tabpanel">
+              <div class="table-responsive border rounded-3">
+                <table class="table table-sm table-custom mb-0 align-middle">
+                  <thead>
+                    <tr>
+                      <th>Date / Time</th>
+                      <th>Stock</th>
+                      <th>Type</th>
+                      <th class="text-end">Quantity</th>
+                      <th class="text-end">Execution Price</th>
+                      <th class="text-end">Total Amount</th>
+                      <th class="text-end">Realized P/L</th>
+                      <th class="text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="modal-txs-body">
+                    <tr><td colspan="8" class="text-center py-4 text-muted">No transactions recorded for this user.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Admin Audits Sub-tab -->
+            <div class="tab-pane fade" id="pill-audits" role="tabpanel">
+              <div class="table-responsive border rounded-3">
+                <table class="table table-sm table-custom mb-0 align-middle">
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Admin Actor</th>
+                      <th>Action</th>
+                      <th class="text-end">Amount</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody id="modal-audits-body">
+                    <tr><td colspan="5" class="text-center py-4 text-muted">No admin money adjustments recorded.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer px-4 py-3 bg-light border-top">
+          <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 2: ADD VIRTUAL MONEY -->
+  <!-- ======================================================== -->
+  <div class="modal fade" id="modalAddMoney" tabindex="-1" aria-labelledby="modalAddMoneyLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+        
+        <div class="modal-header border-bottom px-4 py-3" style="background: #f8fafc;">
+          <div>
+            <h5 class="modal-title fw-bold text-dark mb-0">Add Virtual Money</h5>
+            <div class="text-muted" style="font-size: 0.75rem;">Simulated capital grant for paper trading</div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form id="add-money-form" onsubmit="submitAddMoney(event)">
+          <div class="modal-body p-4">
+            
+            <!-- Recipient Information Box -->
+            <div class="p-3 mb-3 bg-light border rounded-3">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="text-secondary" style="font-size: 0.8rem;">Recipient User:</span>
+                <span class="fw-bold text-dark" id="addmoney-username">Username</span>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-secondary" style="font-size: 0.8rem;">User ID & Email:</span>
+                <span class="text-muted num-mono" style="font-size: 0.8rem;" id="addmoney-email">#0 • email</span>
+              </div>
+              <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                <span class="fw-semibold text-secondary" style="font-size: 0.825rem;">Current Virtual Balance:</span>
+                <span class="fw-bold text-success num-mono fs-6" id="addmoney-current-balance">₹0.00</span>
+              </div>
+            </div>
+
+            <!-- Hidden user ID -->
+            <input type="hidden" id="addmoney-user-id" value="">
+
+            <!-- Amount Input -->
+            <div class="mb-3">
+              <label for="addmoney-amount" class="form-label fw-semibold text-dark" style="font-size: 0.85rem;">
+                Amount to Add (₹) <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <span class="input-group-text fw-bold">₹</span>
+                <input type="number" class="form-control num-mono" id="addmoney-amount" placeholder="e.g. 5000" min="1" step="any" required oninput="calculateBalancePreview()">
+              </div>
+              <div class="form-text" style="font-size: 0.75rem;">
+                Enter a positive simulated amount. Minimum ₹1.00.
+              </div>
+            </div>
+
+            <!-- Quick Preset Chips -->
+            <div class="mb-3">
+              <label class="form-label text-secondary mb-1" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 600;">Quick Presets:</label>
+              <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="preset-chip" onclick="applyPresetAmount(1000)">+₹1,000</button>
+                <button type="button" class="preset-chip" onclick="applyPresetAmount(5000)">+₹5,000</button>
+                <button type="button" class="preset-chip" onclick="applyPresetAmount(10000)">+₹10,000</button>
+                <button type="button" class="preset-chip" onclick="applyPresetAmount(25000)">+₹25,000</button>
+                <button type="button" class="preset-chip" onclick="applyPresetAmount(50000)">+₹50,000</button>
+              </div>
+            </div>
+
+            <!-- Dynamic Balance Preview Box -->
+            <div class="balance-preview-box mb-3">
+              <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
+                <span class="text-secondary">Current Balance:</span>
+                <span class="num-mono fw-semibold" id="prev-cur-bal">₹0.00</span>
+              </div>
+              <div class="d-flex justify-content-between mb-1 text-success" style="font-size: 0.8rem;">
+                <span>+ Grant Amount:</span>
+                <span class="num-mono fw-bold" id="prev-add-amt">₹0.00</span>
+              </div>
+              <hr class="my-2">
+              <div class="d-flex justify-content-between fw-bold text-dark" style="font-size: 0.9rem;">
+                <span>Expected New Balance:</span>
+                <span class="num-mono text-success fs-6" id="prev-new-bal">₹0.00</span>
+              </div>
+            </div>
+
+            <!-- Reason / Note -->
+            <div class="mb-2">
+              <label for="addmoney-reason" class="form-label fw-semibold text-dark" style="font-size: 0.85rem;">
+                Reason / Note (Logged in Audit Trail)
+              </label>
+              <input type="text" class="form-control" id="addmoney-reason" placeholder="e.g. Administrative grant for paper trading competition" maxlength="150">
+            </div>
+
+            <div class="text-muted" style="font-size: 0.72rem;">
+              🔒 <strong>Security Policy:</strong> This transaction will be strictly calculated by the backend and recorded with your Administrator ID.
+            </div>
+
+          </div>
+
+          <div class="modal-footer px-4 py-3 bg-light border-top">
+            <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" id="btn-submit-addmoney" class="btn btn-success btn-sm px-4 fw-bold">
+              <span id="addmoney-spinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+              Confirm & Add Cash
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+
+  <script>
+    // Global State Cache
+    let allUsers = [];
+    let allActivity = [];
+    let allAuditLogs = [];
+    let currentSelectedUser = null;
+    let userDetailsModalInstance = null;
+    let addMoneyModalInstance = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      userDetailsModalInstance = new bootstrap.Modal(document.getElementById('modalUserDetails'));
+      addMoneyModalInstance = new bootstrap.Modal(document.getElementById('modalAddMoney'));
+
+      // Attach detail cash grant button to open add cash modal
+      document.getElementById('detail-btn-add-cash').addEventListener('click', () => {
+        if (currentSelectedUser) {
+          openAddMoneyModal(currentSelectedUser.id, currentSelectedUser.username, currentSelectedUser.email, currentSelectedUser.virtual_cash);
+        }
+      });
+
+      // Load initial data
+      loadDashboardData();
+    });
+
+    /**
+     * Master loader for all Admin Dashboard datasets
+     */
+    async function loadDashboardData() {
+      const spinner = document.getElementById('refresh-spinner');
+      spinner.classList.remove('d-none');
+
+      try {
+        await Promise.all([
+          loadUsers(),
+          loadActivity(),
+          loadAuditLogs()
+        ]);
+        updateKpiMetrics();
+      } catch (err) {
+        showToast('Failed to load dashboard data: ' + err.message, 'error');
+      } finally {
+        spinner.classList.add('d-none');
+      }
+    }
+
+    /**
+     * 1. Load All Users for User Management
+     */
+    async function loadUsers() {
+      const tbody = document.getElementById('users-table-body');
+      try {
+        const res = await API.request('/api/admin/users');
+        if (!res || !res.data) throw new Error('Invalid users response');
+        allUsers = res.data;
+        renderUsersTable(allUsers);
+        document.getElementById('tab-users-count').textContent = allUsers.length;
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-danger">Failed to load users: ${err.message}</td></tr>`;
+        throw err;
+      }
+    }
+
+    /**
+     * Renders User Management Table
+     */
+    function renderUsersTable(users) {
+      const tbody = document.getElementById('users-table-body');
+      document.getElementById('filtered-users-count').textContent = users.length;
+
+      if (!users || users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">No matching registered users found.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      users.forEach(u => {
+        const roleBadge = u.role === 'admin'
+          ? `<span class="badge-role-admin">admin</span>`
+          : `<span class="badge-role-user">user</span>`;
+
+        const isPnlPositive = (u.total_pnl || 0) >= 0;
+        const pnlColorClass = isPnlPositive ? 'text-success' : 'text-danger';
+        const pnlSign = isPnlPositive ? '+' : '';
+        const pnlFormatted = u.formatted_total_pnl || `₹${(u.total_pnl || 0).toFixed(2)}`;
+        const pnlPctFormatted = u.formatted_total_pnl_percent || `${(u.total_pnl_percent || 0).toFixed(2)}%`;
+
+        const avatarLetters = (u.name || u.username || 'U').substring(0, 2).toUpperCase();
+
+        html += `
+          <tr>
+            <td class="num-mono fw-semibold text-muted">#${u.id}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar-circle" style="width: 32px; height: 32px; font-size: 0.75rem;">${avatarLetters}</div>
+                <div>
+                  <div class="fw-bold text-dark">${escapeHtml(u.name || u.username)}</div>
+                  <div class="text-muted" style="font-size: 0.72rem;">@${escapeHtml(u.username)}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="text-secondary">${escapeHtml(u.email || 'N/A')}</span>
+            </td>
+            <td>
+              <span class="text-muted" style="font-size: 0.8rem;">${u.registration_date || 'N/A'}</span>
+            </td>
+            <td>${roleBadge}</td>
+            <td class="text-end num-mono fw-bold text-success">
+              ${u.formatted_virtual_cash || ('₹' + (u.virtual_cash || 0).toLocaleString())}
+            </td>
+            <td class="text-end num-mono fw-semibold text-dark">
+              ${u.formatted_portfolio_value || ('₹' + (u.portfolio_value || 0).toLocaleString())}
+            </td>
+            <td class="text-end num-mono fw-bold ${pnlColorClass}">
+              <div>${pnlSign}${pnlFormatted}</div>
+              <div style="font-size: 0.72rem;">(${pnlPctFormatted})</div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center gap-1">
+                <button class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size: 0.75rem; font-weight: 600;" onclick="inspectUserDetails(${u.id})" title="Inspect User Portfolio & Trades">
+                  Inspect
+                </button>
+                <button class="btn btn-outline-success btn-sm py-1 px-2" style="font-size: 0.75rem; font-weight: 600;" onclick="openAddMoneyModal(${u.id}, '${escapeHtml(u.username)}', '${escapeHtml(u.email)}', ${u.virtual_cash})" title="Add Virtual Money">
+                  + Add Cash
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    /**
+     * Filters User Management Table by Search Term and Role Filter
+     */
+    function filterUsersTable() {
+      const search = (document.getElementById('user-search-input').value || '').toLowerCase().trim();
+      const role = document.getElementById('user-role-filter').value;
+
+      const filtered = allUsers.filter(u => {
+        const matchesSearch = !search ||
+          (u.name && u.name.toLowerCase().includes(search)) ||
+          (u.username && u.username.toLowerCase().includes(search)) ||
+          (u.email && u.email.toLowerCase().includes(search)) ||
+          String(u.id) === search;
+
+        const matchesRole = role === 'ALL' || u.role === role;
+
+        return matchesSearch && matchesRole;
+      });
+
+      renderUsersTable(filtered);
+    }
+
+    /**
+     * 2. Inspect User Details Modal (Holdings, Transactions, Valuation)
+     */
+    async function inspectUserDetails(userId) {
+      try {
+        const res = await API.request(`/api/admin/users/${userId}`);
+        if (!res || !res.data) throw new Error('Failed to load user details');
+
+        const data = res.data;
+        currentSelectedUser = {
+          id: data.user.id,
+          username: data.user.username,
+          email: data.user.email,
+          virtual_cash: data.virtual_cash
+        };
+
+        // Populate User Header
+        document.getElementById('detail-modal-name').textContent = data.user.name || data.user.username;
+        document.getElementById('detail-modal-email').textContent = data.user.email;
+        document.getElementById('detail-modal-id').textContent = data.user.id;
+        document.getElementById('detail-modal-regdate').textContent = data.user.registration_date || 'N/A';
+        document.getElementById('detail-modal-avatar').textContent = (data.user.name || data.user.username).substring(0, 2).toUpperCase();
+
+        const roleBadge = document.getElementById('detail-modal-role-badge');
+        roleBadge.className = data.user.role === 'admin' ? 'badge-role-admin' : 'badge-role-user';
+        roleBadge.textContent = data.user.role || 'user';
+
+        // Populate Financial Metrics
+        document.getElementById('detail-virtual-cash').textContent = data.formatted_virtual_cash || `₹${data.virtual_cash.toLocaleString()}`;
+        document.getElementById('detail-invested-amount').textContent = data.formatted_total_investment || `₹${data.total_investment.toLocaleString()}`;
+        document.getElementById('detail-portfolio-value').textContent = data.formatted_portfolio_value || `₹${data.portfolio_value.toLocaleString()}`;
+        document.getElementById('detail-holdings-count').textContent = `${data.holdings_count || 0} position(s)`;
+
+        const pnlEl = document.getElementById('detail-total-pnl');
+        const pnlPctEl = document.getElementById('detail-total-pnl-pct');
+        const isProfit = (data.total_pnl || 0) >= 0;
+        pnlEl.className = `fs-5 fw-bold num-mono ${isProfit ? 'text-success' : 'text-danger'}`;
+        pnlPctEl.className = `${isProfit ? 'text-success' : 'text-danger'}`;
+        pnlEl.textContent = `${isProfit ? '+' : ''}${data.formatted_total_pnl || ('₹' + (data.total_pnl || 0).toLocaleString())}`;
+        pnlPctEl.textContent = `${isProfit ? '+' : ''}${data.formatted_total_pnl_percent || ((data.total_pnl_percent || 0).toFixed(2) + '%')}`;
+
+        // Populate Badges
+        document.getElementById('modal-holdings-badge').textContent = (data.holdings || []).length;
+        document.getElementById('modal-txs-badge').textContent = (data.transactions || []).length;
+        document.getElementById('modal-audits-badge').textContent = (data.audit_logs || []).length;
+
+        // Render Holdings Sub-tab
+        const holdingsBody = document.getElementById('modal-holdings-body');
+        if (!data.holdings || data.holdings.length === 0) {
+          holdingsBody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">User currently has no active stock holdings.</td></tr>`;
+        } else {
+          let hHtml = '';
+          data.holdings.forEach(h => {
+            const hProfit = (h.pnl || 0) >= 0;
+            const hPnlClass = hProfit ? 'text-success' : 'text-danger';
+            hHtml += `
+              <tr>
+                <td class="fw-bold num-mono text-dark">${escapeHtml(h.symbol)}</td>
+                <td class="text-secondary" style="font-size: 0.8rem;">${escapeHtml(h.company_name || h.symbol)}</td>
+                <td class="text-end num-mono">${h.quantity}</td>
+                <td class="text-end num-mono">${h.formatted_average_buy_price || ('₹' + h.average_buy_price.toFixed(2))}</td>
+                <td class="text-end num-mono fw-semibold">${h.formatted_current_price || ('₹' + h.current_price.toFixed(2))}</td>
+                <td class="text-end num-mono">${h.formatted_invested_amount || ('₹' + h.invested_amount.toFixed(2))}</td>
+                <td class="text-end num-mono fw-bold">${h.formatted_current_value || ('₹' + h.current_value.toFixed(2))}</td>
+                <td class="text-end num-mono fw-bold ${hPnlClass}">${h.formatted_pnl || ('₹' + h.pnl.toFixed(2))}</td>
+                <td class="text-end num-mono fw-bold ${hPnlClass}">${h.formatted_pnl_percent || (h.pnl_percent.toFixed(2) + '%')}</td>
+              </tr>
+            `;
+          });
+          holdingsBody.innerHTML = hHtml;
+        }
+
+        // Render Transactions Sub-tab
+        const txsBody = document.getElementById('modal-txs-body');
+        if (!data.transactions || data.transactions.length === 0) {
+          txsBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No paper trades recorded for this user.</td></tr>`;
+        } else {
+          let tHtml = '';
+          data.transactions.forEach(t => {
+            const isBuy = t.transaction_type === 'BUY';
+            const actionBadge = isBuy
+              ? `<span class="action-buy">BUY</span>`
+              : `<span class="action-sell">SELL</span>`;
+
+            let pnlDisplay = '-';
+            if (!isBuy && t.realized_pnl !== null && t.realized_pnl !== undefined) {
+              const rProfit = t.realized_pnl >= 0;
+              pnlDisplay = `<span class="${rProfit ? 'text-success' : 'text-danger'} fw-bold">${rProfit ? '+' : ''}₹${t.realized_pnl.toFixed(2)}</span>`;
+            }
+
+            tHtml += `
+              <tr>
+                <td class="text-muted" style="font-size: 0.75rem;">${t.formatted_date || (t.created_at ? t.created_at.replace('T', ' ') : 'N/A')}</td>
+                <td class="fw-bold num-mono text-dark">${escapeHtml(t.symbol)}</td>
+                <td>${actionBadge}</td>
+                <td class="text-end num-mono">${t.quantity}</td>
+                <td class="text-end num-mono">${t.formatted_price || ('₹' + t.price.toFixed(2))}</td>
+                <td class="text-end num-mono fw-semibold">${t.formatted_total_amount || ('₹' + t.total_amount.toFixed(2))}</td>
+                <td class="text-end num-mono">${pnlDisplay}</td>
+                <td class="text-center"><span class="badge bg-light text-secondary border" style="font-size: 0.7rem;">${t.status || 'COMPLETED'}</span></td>
+              </tr>
+            `;
+          });
+          txsBody.innerHTML = tHtml;
+        }
+
+        // Render Admin Audits Sub-tab
+        const auditsBody = document.getElementById('modal-audits-body');
+        if (!data.audit_logs || data.audit_logs.length === 0) {
+          auditsBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">No admin capital grants recorded for this user.</td></tr>`;
+        } else {
+          let aHtml = '';
+          data.audit_logs.forEach(a => {
+            aHtml += `
+              <tr>
+                <td class="text-muted" style="font-size: 0.75rem;">${a.created_at ? a.created_at.replace('T', ' ').substring(0, 19) : 'N/A'}</td>
+                <td class="fw-semibold text-dark">${escapeHtml(a.admin_username || 'Admin')}</td>
+                <td><span class="badge bg-success-subtle text-success">${escapeHtml(a.action_type)}</span></td>
+                <td class="text-end num-mono fw-bold text-success">+${a.formatted_amount || ('₹' + a.amount.toFixed(2))}</td>
+                <td class="text-secondary" style="font-size: 0.8rem;">${escapeHtml(a.description)}</td>
+              </tr>
+            `;
+          });
+          auditsBody.innerHTML = aHtml;
+        }
+
+        userDetailsModalInstance.show();
+      } catch (err) {
+        showToast('Error retrieving user details: ' + err.message, 'error');
+      }
+    }
+
+    /**
+     * 3. Load Platform-Wide Paper-Trading Activity Stream
+     */
+    async function loadActivity() {
+      const tbody = document.getElementById('activity-table-body');
+      try {
+        const res = await API.request('/api/admin/activity');
+        if (!res || !res.data) throw new Error('Invalid activity stream response');
+        allActivity = res.data;
+        renderActivityTable(allActivity);
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-danger">Failed to load activity stream: ${err.message}</td></tr>`;
+        throw err;
+      }
+    }
+
+    /**
+     * Renders Paper Trading Activity Table
+     */
+    function renderActivityTable(activityList) {
+      const tbody = document.getElementById('activity-table-body');
+      document.getElementById('filtered-activity-count').textContent = activityList.length;
+
+      if (!activityList || activityList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">No paper trading transactions recorded yet.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      activityList.forEach(item => {
+        const isBuy = item.action === 'BUY' || item.transaction_type === 'BUY';
+        const actionBadge = isBuy
+          ? `<span class="action-buy">BUY</span>`
+          : `<span class="action-sell">SELL</span>`;
+
+        let pnlDisplay = '-';
+        if (!isBuy && item.realized_pnl !== null && item.realized_pnl !== undefined) {
+          const rProfit = item.realized_pnl >= 0;
+          pnlDisplay = `<span class="${rProfit ? 'text-success' : 'text-danger'} fw-bold">${rProfit ? '+' : ''}₹${item.realized_pnl.toFixed(2)}</span>`;
+        }
+
+        html += `
+          <tr>
+            <td class="text-muted" style="font-size: 0.78rem;">${item.formatted_date || item.created_at || 'N/A'}</td>
+            <td>
+              <div class="fw-bold text-dark" style="font-size: 0.85rem;">${escapeHtml(item.username)}</div>
+              <div class="text-muted" style="font-size: 0.72rem;">User ID #${item.user_id}</div>
+            </td>
+            <td>${actionBadge}</td>
+            <td>
+              <div class="fw-bold text-dark num-mono">${escapeHtml(item.symbol)}</div>
+              <div class="text-muted" style="font-size: 0.72rem;">${escapeHtml(item.company_name || item.symbol)}</div>
+            </td>
+            <td class="text-end num-mono">${item.quantity}</td>
+            <td class="text-end num-mono">${item.formatted_price || ('₹' + item.price.toFixed(2))}</td>
+            <td class="text-end num-mono fw-bold">${item.formatted_total_amount || ('₹' + item.total_amount.toFixed(2))}</td>
+            <td class="text-end num-mono">${pnlDisplay}</td>
+            <td class="text-center">
+              <span class="badge bg-success-subtle text-success" style="font-size: 0.7rem;">COMPLETED</span>
+            </td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    /**
+     * Filters Activity Stream by Search & Action Filter
+     */
+    function filterActivityTable() {
+      const search = (document.getElementById('activity-search-input').value || '').toLowerCase().trim();
+      const action = document.getElementById('activity-action-filter').value;
+
+      const filtered = allActivity.filter(item => {
+        const matchesSearch = !search ||
+          (item.symbol && item.symbol.toLowerCase().includes(search)) ||
+          (item.company_name && item.company_name.toLowerCase().includes(search)) ||
+          (item.username && item.username.toLowerCase().includes(search)) ||
+          String(item.user_id) === search;
+
+        const matchesAction = action === 'ALL' || item.action === action || item.transaction_type === action;
+
+        return matchesSearch && matchesAction;
+      });
+
+      renderActivityTable(filtered);
+    }
+
+    /**
+     * 4. Load Admin Audit Trail
+     */
+    async function loadAuditLogs() {
+      const tbody = document.getElementById('audit-table-body');
+      try {
+        const res = await API.request('/api/admin/audit-logs');
+        if (!res || !res.data) throw new Error('Invalid audit response');
+        allAuditLogs = res.data;
+        renderAuditTable(allAuditLogs);
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">Failed to load audit logs: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderAuditTable(logs) {
+      const tbody = document.getElementById('audit-table-body');
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No administrative audit records found.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      logs.forEach(l => {
+        html += `
+          <tr>
+            <td class="text-muted" style="font-size: 0.78rem;">${l.created_at ? l.created_at.replace('T', ' ').substring(0, 19) : 'N/A'}</td>
+            <td class="fw-bold text-dark">${escapeHtml(l.admin_username || 'Admin')} (ID #${l.admin_id})</td>
+            <td class="fw-semibold text-dark">${escapeHtml(l.user_username || 'User')} (ID #${l.user_id})</td>
+            <td><span class="badge bg-danger-subtle text-danger">${escapeHtml(l.action_type)}</span></td>
+            <td class="text-end num-mono fw-bold text-success">+${l.formatted_amount || ('₹' + l.amount.toFixed(2))}</td>
+            <td class="text-secondary" style="font-size: 0.8rem;">${escapeHtml(l.description)}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    /**
+     * 5. Open Add Virtual Money Modal
+     */
+    function openAddMoneyModal(userId, username, email, currentBalance) {
+      document.getElementById('addmoney-user-id').value = userId;
+      document.getElementById('addmoney-username').textContent = `@${username}`;
+      document.getElementById('addmoney-email').textContent = `#${userId} • ${email}`;
+      document.getElementById('addmoney-current-balance').textContent = `₹${parseFloat(currentBalance || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+      document.getElementById('prev-cur-bal').textContent = `₹${parseFloat(currentBalance || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('addmoney-amount').value = '';
+      document.getElementById('addmoney-reason').value = '';
+      document.getElementById('prev-add-amt').textContent = '₹0.00';
+      document.getElementById('prev-new-bal').textContent = `₹${parseFloat(currentBalance || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+      addMoneyModalInstance.show();
+    }
+
+    /**
+     * Applies preset amount chip
+     */
+    function applyPresetAmount(amt) {
+      document.getElementById('addmoney-amount').value = amt;
+      calculateBalancePreview();
+    }
+
+    /**
+     * Calculates real-time balance preview in Add Cash Modal
+     */
+    function calculateBalancePreview() {
+      const curBalText = document.getElementById('addmoney-current-balance').textContent.replace(/[₹,]/g, '').trim();
+      const curBal = parseFloat(curBalText) || 0;
+      const addAmt = parseFloat(document.getElementById('addmoney-amount').value) || 0;
+      const newBal = curBal + addAmt;
+
+      document.getElementById('prev-add-amt').textContent = `+₹${addAmt.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('prev-new-bal').textContent = `₹${newBal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
+    /**
+     * Submits Add Virtual Money to Backend
+     */
+    async function submitAddMoney(event) {
+      event.preventDefault();
+      const userId = document.getElementById('addmoney-user-id').value;
+      const amount = parseFloat(document.getElementById('addmoney-amount').value);
+      const reason = document.getElementById('addmoney-reason').value.trim();
+
+      if (!amount || amount <= 0) {
+        showToast('Please enter a valid amount greater than zero.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit-addmoney');
+      const spinner = document.getElementById('addmoney-spinner');
+      btn.disabled = true;
+      spinner.classList.remove('d-none');
+
+      try {
+        const res = await API.request(`/api/admin/users/${userId}/add-money`, {
+          method: 'POST',
+          body: JSON.stringify({
+            amount: amount,
+            reason: reason || 'Administrative grant'
+          })
+        });
+
+        if (!res || !res.data) throw new Error(res.message || 'Failed to add money');
+
+        showToast(res.message || 'Virtual money successfully added!', 'success');
+        addMoneyModalInstance.hide();
+
+        // Refresh users and audit log
+        await Promise.all([
+          loadUsers(),
+          loadAuditLogs()
+        ]);
+        updateKpiMetrics();
+
+        // If user details modal was open for this user, refresh it
+        if (currentSelectedUser && currentSelectedUser.id === parseInt(userId)) {
+          inspectUserDetails(userId);
+        }
+      } catch (err) {
+        showToast('Transaction error: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+      }
+    }
+
+    /**
+     * Updates top KPI Cards from in-memory cached state
+     */
+    function updateKpiMetrics() {
+      // 1. Total Users
+      const totalUsers = allUsers.length;
+      const adminCount = allUsers.filter(u => u.role === 'admin').length;
+      const stdCount = totalUsers - adminCount;
+      document.getElementById('kpi-total-users').textContent = totalUsers;
+      document.getElementById('kpi-user-roles-breakdown').textContent = `${stdCount} Trader(s) • ${adminCount} Admin(s)`;
+
+      // 2. System Virtual Liquidity
+      const totalCash = allUsers.reduce((sum, u) => sum + (parseFloat(u.virtual_cash) || 0), 0);
+      document.getElementById('kpi-total-cash').textContent = `₹${totalCash.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+
+      // 3. Total Holdings Value
+      const totalHoldingsVal = allUsers.reduce((sum, u) => sum + (parseFloat(u.portfolio_value) || 0), 0);
+      document.getElementById('kpi-total-holdings-val').textContent = `₹${totalHoldingsVal.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+      const totalHoldingsCount = allUsers.reduce((sum, u) => sum + (parseInt(u.holdings_count) || 0), 0);
+      document.getElementById('kpi-active-positions-count').textContent = `${totalHoldingsCount} active position(s) total`;
+
+      // 4. Total Paper Trades
+      document.getElementById('kpi-total-trades').textContent = allActivity.length;
+    }
+
+    /**
+     * Simple Toast Notification Helper
+     */
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toastId = 'toast-' + Date.now();
+      const bgClass = type === 'success' ? 'bg-success text-white' : type === 'error' ? 'bg-danger text-white' : 'bg-dark text-white';
+
+      const html = `
+        <div id="${toastId}" class="toast align-items-center ${bgClass} border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body" style="font-size: 0.85rem; font-weight: 500;">
+              ${escapeHtml(message)}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      `;
+
+      container.insertAdjacentHTML('beforeend', html);
+      const toastEl = document.getElementById(toastId);
+      const bsToast = new bootstrap.Toast(toastEl, { delay: 4000 });
+      bsToast.show();
+
+      toastEl.addEventListener('hidden.bs.toast', () => {
+        toastEl.remove();
+      });
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>

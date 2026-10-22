@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}My Watchlist - StockSense AI{% endblock %}
+
+{% block content %}
+<div class="page-title-group d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div>
+    <h1 class="page-main-heading">My Stock Watchlist</h1>
+    <p class="page-sub-heading">Monitor real-time prices, 24-hour performance, and analyze saved holdings</p>
+  </div>
+  <div>
+    <button class="btn-fintech btn-fintech-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">
+      <span>＋</span> Add Stock
+    </button>
+  </div>
+</div>
+
+<!-- Watchlist Performance Summary Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="fintech-panel p-3">
+      <div class="text-secondary text-uppercase fw-bold" style="font-size:0.7rem;">Tracked Securities</div>
+      <div class="fs-4 fw-bold num-mono mt-1" style="color: #111827;" id="summary-total-count">0</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="fintech-panel p-3">
+      <div class="text-secondary text-uppercase fw-bold" style="font-size:0.7rem;">Top Gainer (24h)</div>
+      <div class="fs-5 fw-bold text-success num-mono mt-1" id="summary-top-gainer">--</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="fintech-panel p-3">
+      <div class="text-secondary text-uppercase fw-bold" style="font-size:0.7rem;">Top Loser (24h)</div>
+      <div class="fs-5 fw-bold text-danger num-mono mt-1" id="summary-top-loser">--</div>
+    </div>
+  </div>
+</div>
+
+<!-- Watchlist Table Card -->
+<div class="fintech-panel">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div style="width: 280px;">
+      <input type="text" id="watchlist-filter-input" class="topbar-search-input" placeholder="Filter watchlist..." style="padding:0.45rem 0.75rem; font-size:0.825rem;">
+    </div>
+    <div class="text-muted" style="font-size:0.75rem;">
+      Real-time quote streaming
+    </div>
+  </div>
+
+  <div class="table-responsive-box">
+    <table class="fintech-data-table">
+      <thead>
+        <tr>
+          <th>Stock Symbol</th>
+          <th>Exchange</th>
+          <th>Sector</th>
+          <th>Current Price</th>
+          <th>24h Change</th>
+          <th>Day Range</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="watchlist-table-body">
+        <!-- Dynamically rendered by watchlist.js -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div id="watchlist-empty-state" class="text-center py-5" style="display: none;">
+    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⭐</div>
+    <h5 class="fw-bold mb-1" style="color: #111827;">Your Watchlist is Empty</h5>
+    <p class="text-secondary mb-3" style="font-size: 0.825rem;">Search and add Indian stocks like RELIANCE, TCS, or INFY to start tracking them.</p>
+    <button class="btn-fintech btn-fintech-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">
+      ＋ Add First Stock
+    </button>
+  </div>
+</div>
+
+<!-- Add Stock Modal (Light Mode) -->
+<div class="modal fade" id="addStockModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content fintech-panel p-3">
+      <div class="modal-header border-bottom border-default pb-2">
+        <h6 class="modal-title fw-bold text-dark">Add Stock to Watchlist</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body py-3">
+        <label class="text-secondary fw-bold mb-1" style="font-size:0.75rem;">Search Indian Stock</label>
+        <input type="text" id="modal-stock-search-input" class="topbar-search-input mb-3" placeholder="Type symbol or company (e.g. TCS, HDFC, INFY)..." autocomplete="off">
+        
+        <div id="modal-search-results" class="border border-default rounded overflow-hidden" style="max-height: 240px; overflow-y: auto; background-color: #ffffff;">
+          <div class="p-3 text-secondary text-center" style="font-size:0.8rem;">Type at least 1 character to search...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/watchlist.js') }}"></script>
+{% endblock %}

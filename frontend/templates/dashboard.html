@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - StockSense AI{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-title-group d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div>
+    <h1 class="page-main-heading">Market Dashboard</h1>
+    <p class="page-sub-heading">Real-time Indian equities surveillance, benchmark indices, and technical analytics</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <a href="/watchlist" class="btn-fintech btn-fintech-ghost">
+      ⭐ My Watchlist
+    </a>
+  </div>
+</div>
+
+<!-- =========================================================================
+     SECTION 1: MARKET OVERVIEW (MAJOR INDICES)
+     ========================================================================= -->
+<div class="mb-4">
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <span class="text-uppercase text-secondary fw-bold" style="font-size:0.75rem; letter-spacing:0.06em;">
+      1. Market Overview (Major Indices)
+    </span>
+    <span class="text-muted" style="font-size:0.75rem;">NSE / BSE Live Feeds</span>
+  </div>
+
+  <div class="market-overview-grid" id="market-indices-grid">
+    <!-- Skeletons while loading -->
+    <div class="market-index-card skeleton-box" style="height: 105px;"></div>
+    <div class="market-index-card skeleton-box" style="height: 105px;"></div>
+    <div class="market-index-card skeleton-box" style="height: 105px;"></div>
+    <div class="market-index-card skeleton-box" style="height: 105px;"></div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     SECTION 2: SEARCH STOCKS (PROMINENT LIGHT SEARCH BOX)
+     ========================================================================= -->
+<div class="fintech-panel mb-4">
+  <div class="panel-header">
+    <h2 class="panel-title">
+      <span>🔎</span> 2. Search Stocks
+    </h2>
+    <span class="stock-card-badge">NSE / BSE Equity Universe</span>
+  </div>
+
+  <div class="position-relative">
+    <div class="d-flex align-items-center">
+      <input type="text" id="dashboard-search-input" class="topbar-search-input" placeholder="Search Indian stocks by symbol or company (e.g. RELIANCE, TCS, INFY, TATAMOTORS, HDFCBANK)..." autocomplete="off" style="padding:0.75rem 1rem 0.75rem 2.5rem; font-size:0.925rem;">
+    </div>
+    <svg class="topbar-search-icon" style="left: 0.9rem; width: 17px; height: 17px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+    </svg>
+    <div class="search-dropdown-menu" id="dashboard-search-results"></div>
+  </div>
+
+  <div class="d-flex align-items-center gap-2 mt-3 flex-wrap" style="font-size:0.75rem;">
+    <span class="text-secondary fw-semibold">Quick Access:</span>
+    <a href="/analysis/RELIANCE" class="quick-stock-chip" style="font-size:0.75rem; text-decoration: none;">RELIANCE</a>
+    <a href="/analysis/TCS" class="quick-stock-chip" style="font-size:0.75rem; text-decoration: none;">TCS</a>
+    <a href="/analysis/HDFCBANK" class="quick-stock-chip" style="font-size:0.75rem; text-decoration: none;">HDFC BANK</a>
+    <a href="/analysis/INFY" class="quick-stock-chip" style="font-size:0.75rem; text-decoration: none;">INFOSYS</a>
+    <a href="/analysis/TATAMOTORS" class="quick-stock-chip" style="font-size:0.75rem; text-decoration: none;">TATA MOTORS</a>
+    <a href="/analysis/ICICIBANK" class="quick-stock-chip" style="font-size:0.75rem; text-decoration: none;">ICICI BANK</a>
+    <a href="/analysis/SBIN" class="quick-stock-chip" style="font-size:0.75rem; text-decoration: none;">SBIN</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Left Column: Watchlist & Recently Viewed Stocks -->
+  <div class="col-lg-8">
+    
+    <!-- =======================================================================
+         SECTION 3: WATCHLIST (Stock Cards Grid)
+         ======================================================================= -->
+    <div class="fintech-panel mb-4">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span>⭐</span> 3. Watchlist
+        </h2>
+        <a href="/watchlist" style="font-size:0.8rem; color: var(--accent-red); font-weight: 600;">Manage All →</a>
+      </div>
+
+      <div id="watchlist-cards-container" class="stock-cards-grid">
+        <div class="stock-card skeleton-box" style="height: 100px;"></div>
+        <div class="stock-card skeleton-box" style="height: 100px;"></div>
+        <div class="stock-card skeleton-box" style="height: 100px;"></div>
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         SECTION 4: RECENTLY VIEWED STOCKS
+         ======================================================================= -->
+    <div class="fintech-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span>🕒</span> 4. Recently Viewed Stocks
+        </h2>
+        <span class="text-muted" style="font-size:0.75rem;">Recent History</span>
+      </div>
+
+      <div id="recent-views-cards-container" class="stock-cards-grid">
+        <div class="stock-card skeleton-box" style="height: 90px;"></div>
+        <div class="stock-card skeleton-box" style="height: 90px;"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Column: Quick Market Statistics -->
+  <div class="col-lg-4">
+    
+    <!-- =======================================================================
+         SECTION 5: QUICK MARKET STATISTICS
+         ======================================================================= -->
+    <div class="fintech-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span>📊</span> 5. Quick Market Statistics
+        </h2>
+        <span class="stock-card-badge">NSE/BSE</span>
+      </div>
+
+      <!-- Quick Metrics Summary -->
+      <div class="d-flex flex-column gap-2 mb-3">
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-subtle">
+          <span class="text-secondary" style="font-size:0.8rem;">Market Breadth</span>
+          <span class="delta-pill positive">32 Adv / 18 Dec</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-subtle">
+          <span class="text-secondary" style="font-size:0.8rem;">NSE Market Status</span>
+          <span class="text-success fw-bold" style="font-size:0.8rem;">Open • Normal Trading</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-subtle">
+          <span class="text-secondary" style="font-size:0.8rem;">Primary Benchmark</span>
+          <span class="fw-bold" style="font-size:0.8rem; color: #111827;">NIFTY 50</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2">
+          <span class="text-secondary" style="font-size:0.8rem;">Market Cap Leader</span>
+          <span class="fw-bold" style="font-size:0.8rem; color: var(--accent-red);">Reliance Industries</span>
+        </div>
+      </div>
+
+      <!-- Top NIFTY Bluechips Table Widget -->
+      <div class="pt-2 border-top border-subtle">
+        <div class="fw-bold mb-2" style="font-size:0.825rem; color: #111827;">Key Benchmark Equities</div>
+        <div class="d-flex flex-column gap-2">
+          <a href="/analysis/RELIANCE" class="d-flex justify-content-between align-items-center p-2 rounded text-decoration-none" style="background-color: #f8fafc; border: 1px solid var(--border-default); transition: background-color 0.15s ease;">
+            <div>
+              <div class="fw-bold" style="font-size:0.825rem; color: #111827;">RELIANCE</div>
+              <div class="text-muted" style="font-size:0.7rem;">Reliance Industries</div>
+            </div>
+            <span class="btn-fintech btn-fintech-ghost" style="padding:2px 8px; font-size:0.7rem;">Analyze →</span>
+          </a>
+
+          <a href="/analysis/TCS" class="d-flex justify-content-between align-items-center p-2 rounded text-decoration-none" style="background-color: #f8fafc; border: 1px solid var(--border-default); transition: background-color 0.15s ease;">
+            <div>
+              <div class="fw-bold" style="font-size:0.825rem; color: #111827;">TCS</div>
+              <div class="text-muted" style="font-size:0.7rem;">Tata Consultancy Services</div>
+            </div>
+            <span class="btn-fintech btn-fintech-ghost" style="padding:2px 8px; font-size:0.7rem;">Analyze →</span>
+          </a>
+
+          <a href="/analysis/HDFCBANK" class="d-flex justify-content-between align-items-center p-2 rounded text-decoration-none" style="background-color: #f8fafc; border: 1px solid var(--border-default); transition: background-color 0.15s ease;">
+            <div>
+              <div class="fw-bold" style="font-size:0.825rem; color: #111827;">HDFCBANK</div>
+              <div class="text-muted" style="font-size:0.7rem;">HDFC Bank Ltd</div>
+            </div>
+            <span class="btn-fintech btn-fintech-ghost" style="padding:2px 8px; font-size:0.7rem;">Analyze →</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

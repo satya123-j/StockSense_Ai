@@ -1,0 +1,666 @@
+/* ==========================================================================
+   StockSense AI - Light Mode Components Design System
+   ========================================================================== */
+
+/* Page Headers */
+.page-title-group {
+  margin-bottom: 1.5rem;
+}
+
+.page-main-heading {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.page-sub-heading {
+  font-size: 0.825rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}
+
+/* Base Card / Panel */
+.fintech-panel {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+}
+
+.fintech-panel:hover {
+  border-color: var(--border-highlight);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.panel-title {
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+/* ==========================================================================
+   Stock Cards Grid
+   ========================================================================== */
+.stock-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.stock-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow-subtle);
+}
+
+.stock-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-highlight);
+  box-shadow: var(--shadow-card-hover);
+  color: inherit;
+}
+
+.stock-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stock-card-symbol {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.01em;
+}
+
+.stock-card-name {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.stock-card-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.stock-card-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.stock-card-price {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+/* Badges for positive/negative change */
+.delta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+  line-height: 1.3;
+}
+
+.delta-pill.positive {
+  background-color: var(--color-up-bg);
+  border: 1px solid var(--color-up-border);
+  color: var(--color-up-dark);
+}
+
+.delta-pill.negative {
+  background-color: var(--color-down-bg);
+  border: 1px solid var(--color-down-border);
+  color: var(--color-down-dark);
+}
+
+.delta-pill.neutral {
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+}
+
+/* ==========================================================================
+   Market Overview Section & Index Cards
+   ========================================================================== */
+.market-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.market-index-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.market-index-card:hover {
+  border-color: var(--border-highlight);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.index-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.index-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.index-val {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+/* ==========================================================================
+   Stock Analysis Page Components
+   ========================================================================== */
+.stock-analysis-header {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-card);
+}
+
+.stock-headline-symbol {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.stock-headline-company {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.stock-price-display {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.03em;
+}
+
+/* Timeframe Bar */
+.timeframe-bar {
+  display: inline-flex;
+  background-color: #f1f5f9;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+.tf-button {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tf-button:hover {
+  color: #111827;
+}
+
+.tf-button.active {
+  background-color: #ffffff;
+  color: var(--accent-red);
+  border-color: var(--border-default);
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Chart Moving Average Overlay Buttons */
+.chart-overlay-btn {
+  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.chart-overlay-btn:hover {
+  color: #111827;
+  border-color: var(--border-highlight);
+}
+
+.chart-overlay-btn.active {
+  background-color: var(--accent-red-bg);
+  color: #111827;
+  border-color: var(--accent-red-border);
+}
+
+/* Quick Stock Switcher Chips */
+.quick-stock-chip {
+  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-subtle);
+}
+
+.quick-stock-chip:hover {
+  background-color: var(--accent-red-bg);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+  transform: translateY(-1px);
+}
+
+.quick-stock-chip.active {
+  background-color: var(--accent-red);
+  border-color: var(--accent-red);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Market Statistics Grid */
+.stats-data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.85rem;
+}
+
+.stat-cell {
+  background-color: #f8fafc;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+}
+
+.stat-cell-title {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.stat-cell-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Technical Analysis 3-Card Section */
+.technicals-triplet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.technical-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: var(--shadow-card);
+}
+
+.tech-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.tech-card-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.01em;
+}
+
+.tech-badge-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
+.tech-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.tech-stat-row:last-child {
+  border-bottom: none;
+}
+
+.tech-stat-label {
+  color: var(--text-secondary);
+}
+
+.tech-stat-val {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ==========================================================================
+   Financial Tables (Light Mode)
+   ========================================================================== */
+.table-responsive-box {
+  overflow-x: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background-color: #ffffff;
+}
+
+.fintech-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.fintech-data-table th {
+  background-color: #f8fafc;
+  padding: 0.85rem 1.15rem;
+  font-size: 0.725rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.fintech-data-table td {
+  padding: 0.95rem 1.15rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+  color: var(--text-primary);
+}
+
+.fintech-data-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.fintech-data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ==========================================================================
+   Buttons & Actions (Light Mode with Red Primary)
+   ========================================================================== */
+.btn-fintech {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.btn-fintech-primary {
+  background-color: var(--accent-red);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(229, 57, 53, 0.2);
+}
+
+.btn-fintech-primary:hover {
+  background-color: var(--accent-red-hover);
+  color: #ffffff;
+  box-shadow: 0 4px 8px rgba(229, 57, 53, 0.3);
+}
+
+.btn-fintech-ghost {
+  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+
+.btn-fintech-ghost:hover {
+  background-color: #f8fafc;
+  border-color: var(--border-highlight);
+  color: #111827;
+}
+
+.btn-fintech-danger {
+  background-color: var(--color-down-bg);
+  border: 1px solid var(--color-down-border);
+  color: var(--color-down-dark);
+}
+
+.btn-fintech-danger:hover {
+  background-color: rgba(229, 57, 53, 0.16);
+  color: var(--accent-red-dark);
+}
+
+.btn-fintech-success {
+  background-color: var(--color-up-bg);
+  border: 1px solid var(--color-up-border);
+  color: var(--color-up-dark);
+}
+
+.btn-fintech-success:hover {
+  background-color: rgba(22, 163, 74, 0.16);
+  color: var(--color-up-dark);
+}
+
+/* ==========================================================================
+   Search Dropdown (Light Mode)
+   ========================================================================== */
+.search-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dropdown);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 1050;
+  display: none;
+}
+
+.search-dropdown-item {
+  padding: 0.65rem 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.search-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.search-dropdown-item:hover {
+  background-color: #f8fafc;
+}
+
+.search-item-ticker {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.search-item-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Skeletons */
+.skeleton-box {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fintech-toast {
+  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow-dropdown);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: #111827;
+  animation: toast-slide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fintech-toast.toast-success {
+  border-left: 4px solid var(--color-up);
+}
+
+.fintech-toast.toast-error {
+  border-left: 4px solid var(--accent-red);
+}
+
+.fintech-toast.toast-info {
+  border-left: 4px solid #2563eb;
+}
+
+@keyframes toast-slide {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modals */
+.modal-content.fintech-panel {
+  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-modal);
+}
+
+/* In-Page Paper Trading Widget */
+.paper-trade-tab-btn {
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  background: transparent;
+}
+.paper-trade-tab-btn.buy-tab.active {
+  background-color: var(--color-up) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+}
+.paper-trade-tab-btn.sell-tab.active {
+  background-color: var(--accent-red) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+}
+.paper-trade-tab-btn:hover:not(.active) {
+  background-color: rgba(0, 0, 0, 0.04);
+}

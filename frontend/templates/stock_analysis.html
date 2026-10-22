@@ -1,0 +1,857 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Analysis - StockSense AI{% endblock %}
+
+{% block content %}
+<!-- =========================================================================
+     IN-PAGE SEARCH & POPULAR INDIAN STOCKS QUICK BAR
+     ========================================================================= -->
+<div class="fintech-panel mb-4 p-3">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 460px;">
+      <div class="topbar-search w-100" style="position: relative;">
+        <svg class="topbar-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        </svg>
+        <input type="text" id="analysis-page-search-input" class="topbar-search-input w-100" placeholder="Search Indian stocks (TCS, INFY, RELIANCE, HDFCBANK)..." autocomplete="off">
+        <div class="search-dropdown-menu" id="analysis-page-search-results"></div>
+      </div>
+    </div>
+
+    <!-- Quick Stock Switcher Chips -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <span class="text-secondary" style="font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Popular:</span>
+      <button class="quick-stock-chip num-mono" data-symbol="TCS">TCS</button>
+      <button class="quick-stock-chip num-mono" data-symbol="INFY">INFY</button>
+      <button class="quick-stock-chip num-mono" data-symbol="RELIANCE">RELIANCE</button>
+      <button class="quick-stock-chip num-mono" data-symbol="HDFCBANK">HDFCBANK</button>
+      <button class="quick-stock-chip num-mono" data-symbol="ICICIBANK">ICICIBANK</button>
+      <button class="quick-stock-chip num-mono" data-symbol="ITC">ITC</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     INVALID SYMBOL / ERROR ALERT
+     ========================================================================= -->
+<div id="invalid-symbol-alert" class="alert d-flex align-items-center justify-content-between mb-4 border-0 p-3" style="background: rgba(229, 57, 53, 0.08); border-left: 4px solid var(--accent-red) !important; border-radius: 8px; display: none;">
+  <div class="d-flex align-items-center gap-2">
+    <span style="font-size: 1.2rem;">⚠️</span>
+    <div>
+      <span class="fw-semibold text-dark" id="invalid-symbol-alert-title">Security Not Found</span>
+      <div class="text-secondary" style="font-size: 0.8rem;" id="invalid-symbol-alert-desc">
+        The requested stock symbol is not recognized on NSE/BSE or has no active quotes.
+      </div>
+    </div>
+  </div>
+  <button class="btn-fintech btn-fintech-ghost btn-sm" onclick="switchToStock('TCS')">View TCS</button>
+</div>
+
+<!-- =========================================================================
+     API / DATA NOTICE BANNER
+     ========================================================================= -->
+<div id="data-source-alert" class="alert d-flex align-items-center justify-content-between mb-4 border-0 p-3" style="background: rgba(37, 99, 235, 0.06); border-left: 4px solid #2563eb !important; border-radius: 8px; display: none;">
+  <div class="d-flex align-items-center gap-2">
+    <span style="font-size: 1.2rem;">ℹ️</span>
+    <div>
+      <span class="fw-semibold text-dark" id="data-source-alert-title">Live Market Feed Active</span>
+      <div class="text-secondary" style="font-size: 0.8rem;" id="data-source-alert-desc">
+        Real-time quotes are fetched via the configured market data API.
+      </div>
+    </div>
+  </div>
+  <span class="stock-card-badge" id="data-source-alert-badge" style="color: #2563eb; border-color: rgba(37, 99, 235, 0.25);">API Active</span>
+</div>
+
+<!-- =========================================================================
+     STOCK ANALYSIS HEADER
+     ========================================================================= -->
+<div class="stock-analysis-header" id="stock-header-container">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+      <span class="stock-headline-symbol num-mono" id="stock-symbol-text">{{ symbol }}</span>
+      <span class="stock-card-badge" id="stock-exchange-badge">NSE</span>
+      <!-- Data Source Label -->
+      <span class="stock-card-badge" id="data-source-pill" style="color: #2563eb; border-color: rgba(37, 99, 235, 0.25); background-color: rgba(37, 99, 235, 0.06);">
+        Data Source: Upstox / NSE Feed
+      </span>
+      <!-- Market Status Label -->
+      <span class="stock-card-badge" id="market-session-pill" style="color: var(--color-up-dark); border-color: var(--color-up-border); background-color: var(--color-up-bg);">
+        Market: Live (09:15 - 15:30 IST)
+      </span>
+    </div>
+    <div class="stock-headline-company" id="stock-company-text">Loading Security Information...</div>
+    <div class="text-muted mt-1" style="font-size:0.75rem;" id="stock-timestamp-text">Last Data Update: --</div>
+  </div>
+
+  <div class="d-flex align-items-center gap-4 flex-wrap">
+    <div class="text-end">
+      <div class="stock-price-display num-mono" id="stock-price-text">
+        <span class="spinner-border spinner-border-sm text-danger me-1" role="status"></span> Loading...
+      </div>
+      <div class="d-flex justify-content-end">
+        <span class="delta-pill neutral num-mono" id="stock-delta-badge">--</span>
+      </div>
+      <!-- User Holding Badge (Simulated Portfolio) -->
+      <div id="user-holding-indicator" class="mt-1 d-flex justify-content-end" style="display: none;">
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.725rem;">
+          💼 Holding: <strong class="num-mono" id="holding-qty-disp">0</strong> shares @ avg <strong class="num-mono" id="holding-avg-disp">₹0.00</strong>
+        </span>
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn-fintech btn-fintech-primary" id="toggle-watchlist-btn">
+        <span>☆</span> Add to Watchlist
+      </button>
+      <button class="btn-fintech" id="paper-trade-buy-btn" data-bs-toggle="modal" data-bs-target="#paperTradeBuyModal" style="background-color: #16a34a; color: #ffffff; border: 1px solid #15803d; font-weight: 600;">
+        <span>📈</span> Paper Trade / Buy
+      </button>
+      <button class="btn-fintech" id="paper-trade-sell-btn" data-bs-toggle="modal" data-bs-target="#paperTradeSellModal" style="display: none; background-color: #dc2626; color: #ffffff; border: 1px solid #b91c1c; font-weight: 600;">
+        <span>📉</span> Sell Shares
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="row g-4" id="stock-content-grid">
+  <!-- Left Side: Large Chart & Technical Analysis Section -->
+  <div class="col-lg-8">
+    
+    <!-- Large Historical Price Chart Panel -->
+    <div class="fintech-panel mb-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div class="panel-title mb-0">
+            <span>📈</span> Historical Price Chart
+          </div>
+          <!-- Moving Average Overlay Toggles on Price Chart -->
+          <div class="d-flex align-items-center gap-1 ms-2">
+            <button class="chart-overlay-btn active" id="toggle-sma20-btn" title="Toggle 20-period Moving Average line on chart">
+              <span style="color:#d97706;">●</span> MA 20
+            </button>
+            <button class="chart-overlay-btn active" id="toggle-sma50-btn" title="Toggle 50-period Moving Average line on chart">
+              <span style="color:#4f46e5;">●</span> MA 50
+            </button>
+          </div>
+        </div>
+
+        <!-- Timeframe buttons: 1D, 1W, 1M, 6M, 1Y -->
+        <div class="timeframe-bar">
+          <button class="tf-button" data-range="1d">1D</button>
+          <button class="tf-button" data-range="1w">1W</button>
+          <button class="tf-button active" data-range="1m">1M</button>
+          <button class="tf-button" data-range="6m">6M</button>
+          <button class="tf-button" data-range="1y">1Y</button>
+        </div>
+      </div>
+
+      <!-- Chart Container with Loading Overlay & Empty State -->
+      <div style="position: relative; width: 100%; height: 380px;">
+        <div id="chart-loading-overlay" style="position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); z-index: 5; display: none; align-items: center; justify-content: center;">
+          <div class="text-center text-muted">
+            <div class="spinner-border text-danger mb-2" role="status" style="width: 2rem; height: 2rem;"></div>
+            <div style="font-size: 0.8rem; color: #4b5563;" id="chart-loading-text">Fetching historical candle data...</div>
+          </div>
+        </div>
+        <div id="chart-empty-state" style="position: absolute; top:0; left:0; right:0; bottom:0; display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 4; background-color: #ffffff;">
+          <div class="text-center p-4">
+            <div style="font-size: 1.6rem; margin-bottom: 0.4rem;">📊</div>
+            <div class="fw-semibold text-dark" style="font-size: 0.875rem;" id="chart-empty-text">Historical data unavailable for this period</div>
+            <div class="text-muted mt-1" style="font-size: 0.75rem;">Try selecting a different timeframe (e.g. 1D, 1W or 1M)</div>
+          </div>
+        </div>
+        <canvas id="mainPriceChartCanvas"></canvas>
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         TECHNICAL ANALYSIS SECTION (Dedicated Cards: RSI, MACD, Moving Averages)
+         ======================================================================= -->
+    <div class="mb-4">
+      <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+        <span class="text-uppercase text-secondary fw-bold" style="font-size:0.75rem; letter-spacing:0.06em;">
+          Technical Analysis (Calculated Indicators)
+        </span>
+        <span class="text-muted" style="font-size:0.75rem;" id="technicals-timestamp-text">
+          Calculated from real historical series
+        </span>
+      </div>
+
+      <div class="technicals-triplet-grid">
+        <!-- 1. RSI Card -->
+        <div class="technical-card">
+          <div class="tech-card-header">
+            <span class="tech-card-name">Relative Strength Index (RSI)</span>
+            <span class="tech-badge-status delta-pill neutral" id="rsi-status-badge">Calculating</span>
+          </div>
+          <div>
+            <div class="d-flex align-items-baseline gap-2 mb-2">
+              <span class="fs-4 fw-bold text-dark num-mono" id="rsi-value-display">--</span>
+              <span class="text-muted" style="font-size:0.75rem;">14-Period RSI</span>
+            </div>
+            <div class="tech-stat-row">
+              <span class="tech-stat-label">Overbought (70)</span>
+              <span class="tech-stat-val text-danger">70.00</span>
+            </div>
+            <div class="tech-stat-row">
+              <span class="tech-stat-label">Oversold (30)</span>
+              <span class="tech-stat-val text-success">30.00</span>
+            </div>
+            <div class="tech-stat-row">
+              <span class="tech-stat-label">Calculated State</span>
+              <span class="tech-stat-val" id="rsi-momentum-text">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. MACD Card -->
+        <div class="technical-card">
+          <div class="tech-card-header">
+            <span class="tech-card-name">MACD (12, 26, 9)</span>
+            <span class="tech-badge-status delta-pill neutral" id="macd-status-badge">Calculating</span>
+          </div>
+          <div>
+            <div class="d-flex align-items-baseline gap-2 mb-2">
+              <span class="fs-4 fw-bold text-dark num-mono" id="macd-value-display">--</span>
+              <span class="text-muted" style="font-size:0.75rem;">Histogram</span>
+            </div>
+            <div class="tech-stat-row">
+              <span class="tech-stat-label">MACD Line</span>
+              <span class="tech-stat-val num-mono" id="macd-line-val">--</span>
+            </div>
+            <div class="tech-stat-row">
+              <span class="tech-stat-label">Signal Line</span>
+              <span class="tech-stat-val num-mono" id="macd-signal-val">--</span>
+            </div>
+            <div class="tech-stat-row">
+              <span class="tech-stat-label">Crossover State</span>
+              <span class="tech-stat-val" id="macd-crossover-text">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Moving Average Card -->
+        <div class="technical-card">
+          <div class="tech-card-header">
+            <span class="tech-card-name">Moving Averages (MA)</span>
+            <span class="tech-badge-status delta-pill neutral" id="ma-status-badge">Calculating</span>
+          </div>
+          <div>
+            <div class="tech-stat-row">
+              <span class="tech-stat-label">MA 20 (SMA 20)</span>
+              <span class="tech-stat-val num-mono" id="ma-sma20-val">--</span>
+            </div>
+            <div class="tech-stat-row">
+              <span class="tech-stat-label">MA 50 (SMA 50)</span>
+              <span class="tech-stat-val num-mono" id="ma-sma50-val">--</span>
+            </div>
+            <div class="tech-stat-row">
+              <span class="tech-stat-label">EMA 20 (Exponential)</span>
+              <span class="tech-stat-val num-mono" id="ma-ema20-val">--</span>
+            </div>
+            <div class="tech-stat-row">
+              <span class="tech-stat-label">MA Relation</span>
+              <span class="tech-stat-val" id="ma-trend-text">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         DEDICATED TECHNICAL INDICATOR CHARTS (RSI & MACD)
+         ======================================================================= -->
+    <div class="row g-3 mb-4">
+      <!-- RSI Sub-Chart -->
+      <div class="col-md-6">
+        <div class="fintech-panel p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="fw-semibold text-dark" style="font-size:0.85rem;">
+              <span>⚡</span> RSI Chart (0 - 100 Scale)
+            </span>
+            <span class="stock-card-badge">14-Period</span>
+          </div>
+          <div style="position: relative; width: 100%; height: 190px;">
+            <canvas id="rsiChartCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- MACD Sub-Chart -->
+      <div class="col-md-6">
+        <div class="fintech-panel p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="fw-semibold text-dark" style="font-size:0.85rem;">
+              <span>📊</span> MACD (12, 26, 9) & Histogram
+            </span>
+            <span class="stock-card-badge">Line & Bars</span>
+          </div>
+          <div style="position: relative; width: 100%; height: 190px;">
+            <canvas id="macdChartCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Company Fundamentals & Profile -->
+    <div class="fintech-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span>🏢</span> Company Profile & Overview
+        </h2>
+      </div>
+
+      <p class="text-secondary mb-3" id="stock-description" style="font-size: 0.85rem; line-height: 1.6;">
+        Loading company business summary...
+      </p>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <span class="stock-card-badge" id="metric-sector">Sector: --</span>
+        <span class="stock-card-badge" id="metric-industry">Industry: --</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Side: Paper Trading, AI Recommendation, Market Stats & ML Forecast -->
+  <div class="col-lg-4">
+    
+    <!-- =========================================================================
+         PAPER TRADING SECTION (Interactive In-Page Simulated Trading)
+         ========================================================================= -->
+    <div class="fintech-panel mb-4" id="inpage-paper-trade-panel">
+      <div class="panel-header d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <span style="font-size: 1.15rem;">💼</span>
+          <h2 class="panel-title mb-0">Paper Trade</h2>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="stock-card-badge" id="pt-selected-symbol-badge" style="font-weight: 700;">{{ symbol }}</span>
+          <span class="stock-card-badge" style="background: rgba(34, 197, 94, 0.08); color: #16a34a; border-color: rgba(34, 197, 94, 0.25); font-weight: 700;">
+            Simulated
+          </span>
+        </div>
+      </div>
+
+      <!-- Action Nav Tabs (BUY / SELL) -->
+      <ul class="nav nav-pills nav-fill mb-3" id="paper-trade-action-tabs" role="tablist" style="background: #f1f5f9; padding: 4px; border-radius: 8px;">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active paper-trade-tab-btn buy-tab py-2" id="pt-tab-buy" data-bs-toggle="pill" data-bs-target="#pt-pane-buy" type="button" role="tab">
+            ▲ BUY
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link paper-trade-tab-btn sell-tab py-2" id="pt-tab-sell" data-bs-toggle="pill" data-bs-target="#pt-pane-sell" type="button" role="tab">
+            ▼ SELL
+          </button>
+        </li>
+      </ul>
+
+      <!-- Tab Content Area -->
+      <div class="tab-content" id="paper-trade-tabs-content">
+        
+        <!-- ==================== BUY TAB ==================== -->
+        <div class="tab-pane fade show active" id="pt-pane-buy" role="tabpanel">
+          
+          <!-- Live Quote & Cash Display -->
+          <div class="p-3 mb-3 rounded" style="background-color: #f8fafc; border: 1px solid var(--border-default);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-secondary" style="font-size: 0.8rem;">Current Market Price:</span>
+              <span class="fw-bold text-dark num-mono fs-6" id="pt-buy-current-price">₹0.00</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+              <span class="text-secondary" style="font-size: 0.8rem;">Available Virtual Cash:</span>
+              <span class="fw-bold text-success num-mono" id="pt-buy-available-cash">₹10,000.00</span>
+            </div>
+          </div>
+
+          <!-- Quantity Input & Total Cost -->
+          <form id="pt-buy-form">
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label for="pt-buy-qty-input" class="form-label text-secondary fw-semibold mb-0" style="font-size: 0.78rem;">
+                  Quantity (Shares)
+                </label>
+                <div class="d-flex gap-1">
+                  <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size: 0.7rem;" onclick="setPtBuyPreset(1)">1</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size: 0.7rem;" onclick="setPtBuyPreset(5)">5</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size: 0.7rem;" onclick="setPtBuyPreset(10)">10</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size: 0.7rem;" onclick="setPtBuyPreset(25)">25</button>
+                </div>
+              </div>
+              <input type="number" id="pt-buy-qty-input" class="topbar-search-input num-mono fw-bold" min="1" step="1" value="1" required style="font-size: 1rem; width: 100%;">
+              <div class="form-text text-muted" style="font-size: 0.72rem;">Enter positive integer shares to buy.</div>
+            </div>
+
+            <!-- Total Cost Breakdown -->
+            <div class="p-3 mb-3 rounded" style="background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2);">
+              <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.85rem;">
+                <span class="text-secondary">Total Cost:</span>
+                <span class="fw-bold text-dark num-mono fs-6" id="pt-buy-total-cost">₹0.00</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center pt-1 border-top" style="font-size: 0.75rem;">
+                <span class="text-secondary">Projected Balance:</span>
+                <span class="fw-semibold num-mono" id="pt-buy-remaining-cash">₹10,000.00</span>
+              </div>
+            </div>
+
+            <!-- Feedback Alerts -->
+            <div id="pt-buy-error-alert" class="alert alert-danger py-2 px-3 mb-3" style="display: none; font-size: 0.8rem; border-radius: 6px;"></div>
+            <div id="pt-buy-success-alert" class="alert alert-success py-2 px-3 mb-3" style="display: none; font-size: 0.8rem; border-radius: 6px;"></div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="pt-buy-confirm-btn" class="btn-fintech w-100 py-2 fw-bold" style="background-color: #16a34a; color: #ffffff; border: none; font-size: 0.875rem;">
+              <span id="pt-buy-spinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+              Confirm BUY
+            </button>
+          </form>
+        </div>
+
+        <!-- ==================== SELL TAB ==================== -->
+        <div class="tab-pane fade" id="pt-pane-sell" role="tabpanel">
+          
+          <!-- Live Quote & Owned Quantity Display -->
+          <div class="p-3 mb-3 rounded" style="background-color: #f8fafc; border: 1px solid var(--border-default);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-secondary" style="font-size: 0.8rem;">Current Market Price:</span>
+              <span class="fw-bold text-dark num-mono fs-6" id="pt-sell-current-price">₹0.00</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+              <span class="text-secondary" style="font-size: 0.8rem;">Owned Quantity:</span>
+              <div>
+                <span class="fw-bold text-dark num-mono" id="pt-sell-owned-qty">0</span>
+                <span class="text-muted" style="font-size: 0.72rem;" id="pt-sell-avg-price-sub">(Avg: ₹0.00)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quantity Input & Total Value -->
+          <form id="pt-sell-form">
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label for="pt-sell-qty-input" class="form-label text-secondary fw-semibold mb-0" style="font-size: 0.78rem;">
+                  Quantity to Sell
+                </label>
+                <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none text-danger fw-bold" id="pt-sell-max-btn" style="font-size: 0.75rem;">
+                  Sell All (Max)
+                </button>
+              </div>
+              <input type="number" id="pt-sell-qty-input" class="topbar-search-input num-mono fw-bold" min="1" step="1" value="1" required style="font-size: 1rem; width: 100%;">
+              <div class="form-text text-muted" style="font-size: 0.72rem;">Enter whole shares &le; owned quantity.</div>
+            </div>
+
+            <!-- Total Value Breakdown -->
+            <div class="p-3 mb-3 rounded" style="background: rgba(220, 38, 38, 0.05); border: 1px solid rgba(220, 38, 38, 0.2);">
+              <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.85rem;">
+                <span class="text-secondary">Total Value:</span>
+                <span class="fw-bold text-dark num-mono fs-6" id="pt-sell-total-value">₹0.00</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center pt-1 border-top" style="font-size: 0.75rem;">
+                <span class="text-secondary">Realized Profit / Loss:</span>
+                <span class="fw-bold num-mono" id="pt-sell-realized-pnl">₹0.00</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center pt-1" style="font-size: 0.75rem;">
+                <span class="text-secondary">Projected Balance:</span>
+                <span class="fw-semibold num-mono text-success" id="pt-sell-projected-cash">₹10,000.00</span>
+              </div>
+            </div>
+
+            <!-- Feedback Alerts -->
+            <div id="pt-sell-error-alert" class="alert alert-danger py-2 px-3 mb-3" style="display: none; font-size: 0.8rem; border-radius: 6px;"></div>
+            <div id="pt-sell-success-alert" class="alert alert-success py-2 px-3 mb-3" style="display: none; font-size: 0.8rem; border-radius: 6px;"></div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="pt-sell-confirm-btn" class="btn-fintech w-100 py-2 fw-bold" style="background-color: #dc2626; color: #ffffff; border: none; font-size: 0.875rem;">
+              <span id="pt-sell-spinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+              Confirm SELL
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      <div class="mt-3 text-muted text-center" style="font-size: 0.7rem;">
+        🛡️ Simulated paper trading with virtual cash. Never real money.
+      </div>
+    </div>
+
+    <!-- AI Recommendation Card -->
+    <div class="fintech-panel mb-4" id="ai-recommendation-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span>🧠</span> AI Recommendation
+        </h2>
+        <span class="stock-card-badge" id="ai-rec-badge" style="font-weight: 700; letter-spacing: 0.05em;">
+          Evaluating...
+        </span>
+      </div>
+
+      <!-- Loading State -->
+      <div id="ai-rec-loading" class="text-center py-4">
+        <div class="spinner-border spinner-border-sm text-danger mb-2" role="status"></div>
+        <div class="text-muted" style="font-size: 0.8rem;">Synthesizing technicals & ML forecast...</div>
+      </div>
+
+      <!-- Error State -->
+      <div id="ai-rec-error" class="alert p-3 mb-0" style="display: none; background: rgba(229, 57, 53, 0.08); border: 1px solid var(--accent-red-border); border-radius: 8px;">
+        <div class="d-flex align-items-center gap-2">
+          <span>⚠️</span>
+          <div>
+            <div class="fw-semibold text-dark" style="font-size: 0.825rem;">Recommendation Unavailable</div>
+            <div class="text-secondary" style="font-size: 0.75rem;" id="ai-rec-error-message">Could not generate recommendation.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content State -->
+      <div id="ai-rec-content" style="display: none;">
+        <!-- Top Recommendation Banner -->
+        <div class="p-3 mb-3 rounded d-flex align-items-center justify-content-between flex-wrap gap-2" id="ai-rec-verdict-box" style="border: 1px solid var(--border-default); background: #f8fafc;">
+          <div>
+            <span class="text-secondary" style="font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">AI Consensus Verdict</span>
+            <div class="d-flex align-items-center gap-2 mt-1">
+              <span class="fs-4 fw-bold num-mono" id="ai-rec-verdict-text">--</span>
+              <span class="delta-pill neutral num-mono" id="ai-rec-score-pill">Score: --</span>
+            </div>
+          </div>
+          <div class="text-end">
+            <div class="text-secondary" style="font-size: 0.7rem; font-weight: 600; text-transform: uppercase;">Confidence Meter</div>
+            <div class="fw-bold num-mono text-dark" id="ai-rec-normalized-score" style="font-size: 0.95rem;">-- / 100</div>
+          </div>
+        </div>
+
+        <!-- Key Input Metrics Grid -->
+        <div class="stats-data-grid mb-3">
+          <div class="stat-cell">
+            <div class="stat-cell-title">Current Price</div>
+            <div class="stat-cell-value num-mono" id="ai-rec-current-price">--</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-title">ML Predicted Price</div>
+            <div class="stat-cell-value num-mono" id="ai-rec-predicted-price">--</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-title">RSI (14)</div>
+            <div class="stat-cell-value num-mono" id="ai-rec-rsi">--</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-title">MACD</div>
+            <div class="stat-cell-value num-mono" id="ai-rec-macd">--</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-title">MA 20</div>
+            <div class="stat-cell-value num-mono" id="ai-rec-ma20">--</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-title">MA 50</div>
+            <div class="stat-cell-value num-mono" id="ai-rec-ma50">--</div>
+          </div>
+        </div>
+
+        <!-- Natural Language Explanation -->
+        <div class="p-3 mb-3 rounded" style="background-color: #ffffff; border: 1px solid var(--border-default);">
+          <div class="text-secondary mb-1" style="font-size: 0.725rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">
+            <span>📋</span> AI Reasoning & Explanation
+          </div>
+          <p class="text-secondary mb-0" id="ai-rec-explanation" style="font-size: 0.82rem; line-height: 1.55;">
+            Analyzing market indicators...
+          </p>
+        </div>
+
+        <!-- Educational Disclaimer -->
+        <div class="p-2 rounded" style="background: rgba(107, 114, 128, 0.05); border: 1px dashed var(--border-default); font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">
+          <strong>Disclaimer:</strong> This recommendation is generated algorithmically for educational and informational purposes only and does not constitute financial, investment, or trading advice.
+        </div>
+      </div>
+    </div>
+
+    <!-- Market Statistics Card -->
+    <div class="fintech-panel mb-4">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span>📊</span> Market Statistics
+        </h2>
+        <span class="stock-card-badge">NSE/BSE Quote</span>
+      </div>
+
+      <div class="stats-data-grid">
+        <div class="stat-cell">
+          <div class="stat-cell-title">Open</div>
+          <div class="stat-cell-value num-mono" id="metric-open">--</div>
+        </div>
+
+        <div class="stat-cell">
+          <div class="stat-cell-title">Previous Close</div>
+          <div class="stat-cell-value num-mono" id="metric-prev-close">--</div>
+        </div>
+
+        <div class="stat-cell">
+          <div class="stat-cell-title">High</div>
+          <div class="stat-cell-value num-mono text-success" id="metric-day-high">--</div>
+        </div>
+
+        <div class="stat-cell">
+          <div class="stat-cell-title">Low</div>
+          <div class="stat-cell-value num-mono text-danger" id="metric-day-low">--</div>
+        </div>
+
+        <div class="stat-cell">
+          <div class="stat-cell-title">Volume</div>
+          <div class="stat-cell-value num-mono" id="metric-volume">--</div>
+        </div>
+
+        <div class="stat-cell">
+          <div class="stat-cell-title">Market Cap</div>
+          <div class="stat-cell-value num-mono" id="metric-mcap">--</div>
+        </div>
+
+        <div class="stat-cell">
+          <div class="stat-cell-title">52 Week High</div>
+          <div class="stat-cell-value num-mono" id="metric-52w-high">--</div>
+        </div>
+
+        <div class="stat-cell">
+          <div class="stat-cell-title">52 Week Low</div>
+          <div class="stat-cell-value num-mono" id="metric-52w-low">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ML Price Prediction Card -->
+    <div class="fintech-panel mb-4" id="ml-prediction-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span>🤖</span> ML Price Prediction
+        </h2>
+        <span class="stock-card-badge" id="ml-best-model-badge" style="color: #2563eb; border-color: rgba(37, 99, 235, 0.25); background-color: rgba(37, 99, 235, 0.06);">
+          Evaluating...
+        </span>
+      </div>
+
+      <!-- Loading State -->
+      <div id="ml-prediction-loading" class="text-center py-4">
+        <div class="spinner-border spinner-border-sm text-danger mb-2" role="status"></div>
+        <div class="text-muted" style="font-size: 0.8rem;">Training models & generating prediction...</div>
+      </div>
+
+      <!-- Error State -->
+      <div id="ml-prediction-error" class="alert p-3 mb-0" style="display: none; background: rgba(229, 57, 53, 0.08); border: 1px solid var(--accent-red-border); border-radius: 8px;">
+        <div class="d-flex align-items-center gap-2">
+          <span>⚠️</span>
+          <div>
+            <div class="fw-semibold text-dark" style="font-size: 0.825rem;">Prediction Unavailable</div>
+            <div class="text-secondary" style="font-size: 0.75rem;" id="ml-error-message">Could not calculate forecast.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content State -->
+      <div id="ml-prediction-content" style="display: none;">
+        <!-- Top Prediction Highlight -->
+        <div class="p-3 mb-3 rounded" style="background: #f8fafc; border: 1px solid var(--border-default);">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-secondary" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Next-Day Forecast</span>
+            <span class="delta-pill neutral num-mono" id="ml-direction-pill">--</span>
+          </div>
+          <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2">
+            <div>
+              <div class="fs-3 fw-bold text-dark num-mono" id="ml-predicted-price">--</div>
+              <div class="text-muted" style="font-size: 0.75rem;">Predicted Closing Price</div>
+            </div>
+            <div class="text-end">
+              <div class="fw-bold num-mono" id="ml-expected-change" style="font-size: 0.95rem;">--</div>
+              <div class="text-muted" style="font-size: 0.75rem;" id="ml-expected-change-pct">Expected Change</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="stats-data-grid mb-3">
+          <div class="stat-cell">
+            <div class="stat-cell-title">Current Price</div>
+            <div class="stat-cell-value num-mono" id="ml-current-price">--</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-title">Best Model</div>
+            <div class="stat-cell-value" id="ml-best-model-name" style="font-size: 0.85rem; word-break: break-word;">--</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-title">MAE</div>
+            <div class="stat-cell-value num-mono" id="ml-metric-mae">--</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-title">RMSE</div>
+            <div class="stat-cell-value num-mono" id="ml-metric-rmse">--</div>
+          </div>
+          <div class="stat-cell" style="grid-column: 1 / -1;">
+            <div class="stat-cell-title">R² Score (Model Fit)</div>
+            <div class="stat-cell-value num-mono" id="ml-metric-r2">--</div>
+          </div>
+        </div>
+
+        <div class="text-muted text-end" style="font-size: 0.7rem;" id="ml-prediction-timestamp">
+          Forecast: --
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- =========================================================================
+     PAPER TRADE / BUY MODAL (Simulated virtual paper trading)
+     ========================================================================= -->
+<div class="modal fade" id="paperTradeBuyModal" tabindex="-1" aria-labelledby="paperTradeBuyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+    <div class="modal-content fintech-panel p-4" style="border: 1px solid var(--border-default); border-radius: var(--radius-lg); background: #ffffff;">
+      <div class="modal-header p-0 pb-3 border-bottom d-flex justify-content-between align-items-start">
+        <div>
+          <span class="badge bg-success-subtle text-success fw-bold px-2 py-1" style="font-size: 0.7rem;">SIMULATED PAPER TRADING</span>
+          <h5 class="modal-title fw-bold text-dark mt-1" id="paperTradeBuyModalLabel">Buy Stock (Virtual Cash)</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-0 pt-3">
+        <!-- Stock Details Summary -->
+        <div class="p-3 mb-3 rounded bg-light border">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold text-dark num-mono" id="modal-buy-symbol">{{ symbol }}</span>
+            <span class="badge bg-secondary-subtle text-secondary" id="modal-buy-exchange">NSE</span>
+          </div>
+          <div class="text-secondary small mb-2" id="modal-buy-company">Loading security info...</div>
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+            <span class="text-secondary" style="font-size: 0.8rem;">Current Price:</span>
+            <span class="fw-bold text-dark num-mono" id="modal-buy-price">₹0.00</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center pt-1">
+            <span class="text-secondary" style="font-size: 0.8rem;">Available Virtual Cash:</span>
+            <span class="fw-semibold text-success num-mono" id="modal-buy-available-cash">₹10,000.00</span>
+          </div>
+        </div>
+
+        <form id="paper-buy-form">
+          <div class="mb-3">
+            <label for="buy-quantity-input" class="form-label text-secondary fw-semibold" style="font-size:0.75rem;">Quantity (Number of Shares)</label>
+            <input type="number" id="buy-quantity-input" class="topbar-search-input num-mono" min="1" step="1" value="1" required style="font-size: 1rem; font-weight: 600;">
+            <div class="form-text text-muted" style="font-size: 0.75rem;">Enter a positive integer share quantity.</div>
+          </div>
+
+          <!-- Total Calculation Breakdown -->
+          <div class="p-3 mb-3 rounded" style="background: rgba(34, 197, 94, 0.06); border: 1px solid rgba(34, 197, 94, 0.2);">
+            <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.8rem;">
+              <span class="text-secondary">Estimated Total Cost:</span>
+              <span class="fw-bold text-dark num-mono" id="modal-buy-total-cost">₹0.00</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
+              <span class="text-secondary">Estimated Balance After Buy:</span>
+              <span class="fw-semibold num-mono" id="modal-buy-remaining-balance">₹10,000.00</span>
+            </div>
+          </div>
+
+          <div id="modal-buy-error-alert" class="alert alert-danger py-2 px-3 mb-3" style="display: none; font-size: 0.8rem; border-radius: var(--radius-sm);"></div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" id="modal-confirm-buy-btn" class="btn-fintech py-2 fw-semibold" style="background-color: #16a34a; color: #fff; border: none;">
+              Confirm Simulated Buy
+            </button>
+            <button type="button" class="btn-fintech btn-fintech-secondary py-2" data-bs-dismiss="modal">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     PAPER TRADE SELL MODAL (Simulated Portfolio Sell)
+     ========================================================================= -->
+<div class="modal fade" id="paperTradeSellModal" tabindex="-1" aria-labelledby="paperTradeSellModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content fintech-panel p-3" style="box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+      <div class="modal-header border-bottom border-default pb-3">
+        <div class="d-flex align-items-center gap-2">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(239, 68, 68, 0.1); color: #dc2626; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+            📉
+          </div>
+          <div>
+            <h6 class="modal-title fw-bold text-dark mb-0" id="paperTradeSellModalLabel">Paper Trade SELL - Simulated Order</h6>
+            <div class="text-muted" style="font-size: 0.72rem;">Liquidate simulated shares back to virtual cash</div>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body py-3">
+        <div class="p-3 mb-3 rounded" style="background-color: #f8fafc; border: 1px solid var(--border-default);">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold fs-5 text-dark" id="modal-sell-symbol">RELIANCE</span>
+            <span class="fw-bold num-mono text-dark" id="modal-sell-current-price">₹0.00</span>
+          </div>
+          <div class="d-flex justify-content-between pt-2 border-top border-default" style="font-size: 0.775rem;">
+            <div>
+              <span class="text-secondary">Shares Owned:</span>
+              <strong class="num-mono text-dark" id="modal-sell-owned-qty">0</strong>
+            </div>
+            <div>
+              <span class="text-secondary">Avg Buy Price:</span>
+              <strong class="num-mono text-dark" id="modal-sell-avg-price">₹0.00</strong>
+            </div>
+          </div>
+        </div>
+
+        <form id="paper-sell-form">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="modal-sell-qty-input" class="form-label text-secondary fw-semibold mb-0" style="font-size:0.75rem;">Quantity to Sell</label>
+              <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none" id="modal-sell-max-btn" style="font-size: 0.75rem; color: #dc2626; font-weight: 600;">
+                Sell All (Max)
+              </button>
+            </div>
+            <input type="number" id="modal-sell-qty-input" class="topbar-search-input num-mono" min="1" step="1" value="1" required style="font-size: 1rem; font-weight: 600;">
+            <div class="form-text text-muted" style="font-size: 0.75rem;">Enter a positive whole number $\le$ owned shares.</div>
+          </div>
+
+          <div class="p-3 mb-3 rounded" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.8rem;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-secondary">Estimated Sell Proceeds:</span>
+              <span class="fw-bold text-dark num-mono" id="modal-sell-total-proceeds">₹0.00</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-default">
+              <span class="text-secondary">Realized Profit / Loss:</span>
+              <span class="fw-bold num-mono" id="modal-sell-realized-pnl">₹0.00</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.75rem;">
+              <span class="text-secondary">Remaining Shares:</span>
+              <span class="fw-semibold num-mono" id="modal-sell-remaining-qty">0</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
+              <span class="text-secondary">Projected Virtual Cash:</span>
+              <span class="fw-semibold num-mono text-success" id="modal-sell-projected-cash">₹10,000.00</span>
+            </div>
+          </div>
+
+          <div id="modal-sell-error-alert" class="alert alert-danger py-2 px-3 mb-3" style="display: none; font-size: 0.8rem; border-radius: var(--radius-sm);"></div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" id="modal-confirm-sell-btn" class="btn-fintech py-2 fw-semibold" style="background-color: #dc2626; color: #fff; border: none;">
+              Confirm Simulated Sell
+            </button>
+            <button type="button" class="btn-fintech btn-fintech-secondary py-2" data-bs-dismiss="modal">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/stock_analysis.js') }}"></script>
+{% endblock %}

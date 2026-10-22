@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Profile & Settings - StockSense AI{% endblock %}
+
+{% block content %}
+<div class="page-title-group d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div>
+    <h1 class="page-main-heading">Profile & Account Settings</h1>
+    <p class="page-sub-heading">Manage account information, authentication credentials, and session preferences</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Left Side: Profile Summary Card -->
+  <div class="col-lg-4">
+    <div class="fintech-panel text-center p-4">
+      <div class="user-avatar-pill mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.4rem; border: 2px solid var(--accent-red); background-color: var(--accent-red-bg); color: var(--accent-red);">
+        SS
+      </div>
+      <h5 class="fw-bold mb-1" style="color: #111827;" id="profile-fullname-display">Investor</h5>
+      <div class="mb-3 num-mono" style="font-size: 0.85rem; color: var(--accent-red); font-weight: 600;" id="profile-username">@investor</div>
+
+      <div class="d-flex justify-content-around py-3 border-top border-bottom border-subtle mb-3">
+        <div>
+          <div class="fs-5 fw-bold num-mono" style="color: #111827;" id="profile-watchlist-count">0</div>
+          <div class="text-secondary" style="font-size:0.7rem; text-transform:uppercase; font-weight: 600;">Watchlist</div>
+        </div>
+        <div>
+          <div class="fs-5 fw-bold num-mono" style="color: #111827;">NSE / BSE</div>
+          <div class="text-secondary" style="font-size:0.7rem; text-transform:uppercase; font-weight: 600;">Exchanges</div>
+        </div>
+      </div>
+
+      <div class="text-start" style="font-size: 0.825rem;">
+        <div class="d-flex justify-content-between py-1 border-bottom border-subtle">
+          <span class="text-secondary">Email:</span>
+          <span class="fw-medium text-dark" id="profile-email">--</span>
+        </div>
+        <div class="d-flex justify-content-between py-1">
+          <span class="text-secondary">Member Since:</span>
+          <span class="fw-medium text-dark" id="profile-joined">--</span>
+        </div>
+      </div>
+
+      <button class="btn-fintech btn-fintech-danger w-100 mt-4" onclick="handleLogout()">
+        Sign Out
+      </button>
+    </div>
+  </div>
+
+  <!-- Right Side: Edit Profile & Security Forms -->
+  <div class="col-lg-8">
+    <!-- Edit Information Form -->
+    <div class="fintech-panel mb-4">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span>👤</span> Personal Information
+        </h2>
+      </div>
+
+      <form id="profile-update-form">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="edit-full-name" class="form-label text-secondary fw-bold" style="font-size:0.75rem;">Full Name</label>
+            <input type="text" id="edit-full-name" class="topbar-search-input" placeholder="Your full name" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="edit-email" class="form-label text-secondary fw-bold" style="font-size:0.75rem;">Email Address</label>
+            <input type="email" id="edit-email" class="topbar-search-input" placeholder="Your email address" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-fintech btn-fintech-primary">
+          Save Changes
+        </button>
+      </form>
+    </div>
+
+    <!-- Security & Password Form -->
+    <div class="fintech-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span>🔒</span> Change Password
+        </h2>
+      </div>
+
+      <form id="change-password-form">
+        <div class="mb-3">
+          <label for="current-password" class="form-label text-secondary fw-bold" style="font-size:0.75rem;">Current Password</label>
+          <input type="password" id="current-password" class="topbar-search-input" placeholder="Enter current password" required autocomplete="current-password">
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="new-password" class="form-label text-secondary fw-bold" style="font-size:0.75rem;">New Password</label>
+            <input type="password" id="new-password" class="topbar-search-input" placeholder="Min. 6 characters" required autocomplete="new-password">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="confirm-new-password" class="form-label text-secondary fw-bold" style="font-size:0.75rem;">Confirm New Password</label>
+            <input type="password" id="confirm-new-password" class="topbar-search-input" placeholder="Confirm new password" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-fintech btn-fintech-ghost">
+          Update Password
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}
