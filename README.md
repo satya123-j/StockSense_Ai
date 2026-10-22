@@ -210,27 +210,3 @@ python -m unittest tests/test_api.py
 
 ---
 
-## 📈 Technical Analysis Formulas Implemented
-
-- **Simple Moving Average (SMA)**: \(\text{SMA}_k = \frac{1}{k} \sum_{i=0}^{k-1} P_{t-i}\) (calculated for \(k=20, 50, 200\)).
-- **Exponential Moving Average (EMA)**: \(\text{EMA}_t = \alpha P_t + (1-\alpha) \text{EMA}_{t-1}\) with \(\alpha = \frac{2}{k+1}\) for \(k=20\).
-- **Relative Strength Index (RSI)**: \(\text{RSI}_{14} = 100 - \frac{100}{1 + \text{RS}}\) where \(\text{RS} = \frac{\text{Average Gain}}{\text{Average Loss}}\).
-- **MACD**: \(\text{MACD Line} = \text{EMA}_{12} - \text{EMA}_{26}\), \(\text{Signal} = \text{EMA}_9(\text{MACD})\), \(\text{Histogram} = \text{MACD} - \text{Signal}\).
-- **Bollinger Bands**: \(\text{Upper/Lower} = \text{SMA}_{20} \pm 2\sigma\).
-- **Pivot Points**: Classical floor trader pivots (\(P, R_1, R_2, S_1, S_2\)).
-
----
-
-## 🎯 Milestone 1 (50%) Scope Verification
-
-- [x] Flask REST API backend with clean modular folder architecture
-- [x] MySQL + SQLAlchemy ORM database models and migrations
-- [x] User registration, login, logout, password hashing & JWT auth
-- [x] Real-time Indian stock market quote fetching (NSE/BSE)
-- [x] Market overview indices (NIFTY 50, BSE SENSEX, BANK NIFTY)
-- [x] Quantitative technical analysis engine (pandas/numpy)
-- [x] Interactive Chart.js charts with multi-timeframes and indicator overlays
-- [x] User Watchlist with live price enrichment, duplicate prevention, and deletion
-- [x] User Profile management and password update
-- [x] Responsive modern fintech UI with dark theme
-- [x] Comprehensive test suite & installation documentation
